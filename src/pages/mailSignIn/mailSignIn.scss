@@ -1,0 +1,26 @@
+page-mail-signin {
+    
+    .description{
+        margin-top: 5rem;
+        text-align: center;
+        line-height: 2.6rem;
+        font-size: 1.4rem;
+        text-align: center;
+    }
+
+    .scroll-content{
+        padding: 0 3rem;
+    }
+
+    #mail-signin-pic{
+        margin: 3rem auto;
+        display: block;
+        min-width: 16rem;
+    }
+
+    .unbold{
+        input{
+            font-weight: 400;
+        }
+    }
+}

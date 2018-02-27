@@ -1,0 +1,22 @@
+<ion-content padding text-center>
+    <img id="logo" src="assets/images/logo.png" margin>
+
+    <form (submit)="Login()">
+        <ion-item padding>
+            <ion-label floating>Email address</ion-label>
+            <ion-input clearInput type="email" [(ngModel)]="credentials.user" name="email"></ion-input>
+        </ion-item>
+        <ion-item padding margin-bottom>
+            <ion-label floating>Password</ion-label>
+            <ion-input clearInput type="password" [(ngModel)]="credentials.password" name="password"></ion-input>
+        </ion-item>
+
+        <button class="green" ion-button margin>Log in</button>
+    </form>
+
+    <button class="blue" ion-button icon-left (click)="LoginWithLinkedIn()">
+        <ion-icon name="logo-linkedin"></ion-icon>
+        Sign in with LinkedIn
+    </button>
+
+</ion-content>

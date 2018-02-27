@@ -1,0 +1,22 @@
+<ion-header>
+    <div class="invisibleheader">
+        <button class="icon-btn i i-arrow-left" (tap)="back()"></button>
+        <span class="title">Sign in</span>
+    </div>    
+</ion-header>
+
+<ion-content>
+
+    <div class="description">Enter your email address and hit the Next button to get started !</div>
+
+    <img id="mail-signin-pic" src="assets/images/illu-rocket.svg" margin>
+
+    <ion-item class="clean-stack-input">
+        <ion-label stacked>EMAIL</ion-label>
+        <ion-input type="mail" [(ngModel)]="email" (keyup.enter)="checkSignInMail()" 
+            [class.unbold]="!email" placeholder="email@school.com" name="email" ></ion-input>
+    </ion-item>
+
+    <button m-top full ion-button (tap)="checkSignInMail()">Next</button>
+
+</ion-content>

@@ -1,0 +1,24 @@
+
+<div *ngIf="!loading" (click)="goToConversation()" [class.unread]="isUnread()">
+    
+    <div class="avatars" [userStatus]="other_users" [class.two]="other_users.length===2">
+        <div *ngFor="let id of other_users.slice(0,2)" class="avatar"
+            [backgroundImg]="userModel.list[id].datum.avatar | dmsUrl">{{ userModel.list[id].datum | userletter }}</div>
+        <div class="others" *ngIf="other_users.length > 2">+{{ other_users.length-2 }}</div>
+    </div>
+        
+    <div class="conversation-item">
+        <div class="name">{{ printName() }}</div>
+        <div class="subtitle">
+            <span class="last">{{ printUser() }}{{ conversation.datum.message.text }} </span>
+
+            <span *ngIf="readCountUsers" class="read-dot">+{{ readCountUsers }}</span>
+            <span *ngFor="let id of readAvatarUsers" class="avatar"
+                [backgroundImg]="userModel.list[id].datum.avatar | dmsUrl">{{ userModel.list[id].datum | userletter }}</span>
+
+            <span class="date">{{ conversation.datum.message.created_date | since }}</span>
+        </div>
+    </div>
+
+</div>
+

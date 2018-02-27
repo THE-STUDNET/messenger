@@ -1,0 +1,12 @@
+<ion-item *ngIf="!loading" (click)="launchHangout()">
+    <ion-avatar item-start>
+        <div [ngStyle]="page.datum.logo | dmsBgUrl" text-uppercase>
+            <span *ngIf="!page.datum.logo">{{ page.datum.title[0] }}</span>
+        </div>
+    </ion-avatar>
+    <h2>{{ item.datum.title }}</h2>
+    <h3>in course: {{ page.datum.title }}</h3>
+    <p>
+        <span *ngIf="item.datum.start_date">Start on {{ item.datum.start_date | date: 'medium' }}</span><span>&nbsp;</span>
+    </p>
+</ion-item>

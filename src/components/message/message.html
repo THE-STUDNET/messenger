@@ -1,0 +1,38 @@
+
+<div *ngIf="showPreviousDay()" class="day-separator">
+    <div class="line"></div>
+    <div class="day">{{ printDay() }}</div>
+    <div class="line"></div>
+</div>
+
+<div class="message-container" [class.me]="user.datum.id===account.session.id"
+    [class.sending]="message.promise" [class.error]="message.sendingFailed">
+    <div class="author" *ngIf="showAuthor()">
+        <div *ngIf="user.datum.id!==account.session.id" class="avatar" 
+            [backgroundImg]="user.datum.avatar | dmsUrl">
+            {{ user.datum | userletter }}
+        </div>
+        <div class="name">{{ user.datum | username:true:true }}</div>
+    </div>
+    <div class="message-text" [class.notrounded]="_hasNotRoundedBorder()" (tap)="messageTap()">
+        <span>{{ message.text }}</span>
+        <span class="hour">{{ message.created_date | date:'shortTime' }}</span>
+
+        <div class="sending-animation" *ngIf="message.promise && !message.sendingFailed">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+
+        <div class="error-text" *ngIf="message.sendingFailed">
+            <span class="i i-alert"></span>
+            <span>Tap here to send again</span>
+        </div>
+    </div>
+    <div class="last-read" *ngIf="lastReadUsers.length">
+        <div *ngFor="let id of lastReadUsers" class="avatar" 
+            [backgroundImg]="userModel.list[id].datum.avatar | dmsUrl">
+            {{ userModel.list[id].datum | userletter }}
+        </div>
+    </div>
+</div>

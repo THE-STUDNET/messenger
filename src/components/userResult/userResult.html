@@ -1,0 +1,21 @@
+<div *ngIf="!loading" class="user">
+    <div class="avatar" [userStatus]="[user.datum.id]" 
+        [backgroundImg]="user.datum.avatar | dmsUrl">
+        {{ user.datum | userletter }}
+    </div>
+
+    <div class="content">
+        <div class="name">{{ user.datum | username }}</div>
+        <div class="subtitle">{{ page.datum.title }}</div>
+    </div>
+
+    <div class="i i-chevron-right"></div>
+
+</div>
+<div class="loading-user" *ngIf="loading">
+    <div class="avatar"></div>
+    <div class="content">
+        <div class="mline loading-gradient"></div>
+        <div class="sline loading-gradient"></div>
+    </div>
+</div>

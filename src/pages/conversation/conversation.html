@@ -1,0 +1,79 @@
+<ion-header>
+    <div class="appheader">
+        <div class="top">
+            <button class="icon-btn i i-arrow-left"
+                (tap)="back()"></button>
+            <div class="title">{{ printName() }}</div>
+        </div>
+        <div class="bottom">
+            <div class="subtitle">{{ printSubtitle() }}</div>
+            <div class="avatars" *ngIf="!loadingUsers">
+                <div *ngFor="let user_id of users" class="avatar" 
+                    [backgroundImg]="userModel.list[user_id].datum.avatar | dmsUrl">
+                    {{ userModel.list[user_id].datum | userletter }}
+                </div>
+            </div>
+        </div>
+    </div>    
+</ion-header>
+
+<ion-content>
+    <div class="loader" *ngIf="loading">
+        <ion-spinner></ion-spinner>
+    </div>
+
+    <ion-refresher (ionRefresh)="previous($event)" [enabled]="!loading">
+        <ion-refresher-content></ion-refresher-content>
+    </ion-refresher>
+
+    <div class="messages" *ngIf="!loading && messagesPaginator">
+        <message *ngFor="let messageId of indexes; trackBy trackMessageId;"
+            [messageId]="messageId" [paginator]="messagesPaginator" 
+            [readIds]="usersLastUnreadId" [loaded]="onMessageLoaded"></message>
+    </div>
+    
+    <div class="messages" *ngIf="!loading && messagesPaginator">
+        <message *ngFor="let message of messagesPaginator.sendings"
+            [message]="message" [paginator]="messagesPaginator" [loaded]="onMessageLoaded"></message>
+    </div>        
+
+    <div class="queued-messages" *ngIf="!loading && (!messagesPaginator || !messagesPaginator.sendings.length)">
+        <message *ngFor="let message of queuedMessages"
+            [message]="message" [paginator]="messagesPaginator" [loaded]="onMessageLoaded"></message>
+    </div>
+    
+    <writing *ngIf="writer" [writer]="writer" [loaded]="onMessageLoaded"></writing>
+
+    <!--<div class="writing message-container" *ngIf="writer">
+        <div class="author">
+            <div class="avatar" 
+                [userStatus]="[writer.datum.id]"
+                [backgroundImg]="writer.datum.avatar | dmsUrl">
+                {{ writer.datum | userletter }}
+            </div>
+            <div class="name">{{ writer.datum | username:false:true }}</div>
+        </div>
+        <div class="message-text notrounded">
+            <div class="writing-text">
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+        </div>
+    </div>-->
+
+</ion-content>
+
+<ion-footer>
+
+    <div class="sender">
+        
+        <div class="dta">
+            <textarea placeholder="Say something..." type="text" (input)="onTyping()"
+                [(ngModel)]="text" (keyup.enter)="send()" name="text"></textarea>
+            <div class="dta-copy">{{ text }}</div>
+        </div>
+        <button class="icon-btn i i-send send" [class.active]="text" (click)="send()"></button>
+    </div>
+
+</ion-footer>

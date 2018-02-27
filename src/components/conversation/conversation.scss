@@ -1,0 +1,141 @@
+conversation{
+    position:relative;
+
+
+    .conversation-item{
+        line-height: 2rem;
+        padding: 2rem 2rem 2rem 0;
+        margin-left: 7.2rem;
+        border-bottom: 1px solid $border-clr;
+    }
+
+    .name{
+        font-weight: 600;
+        font-size: 1.4rem;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .subtitle{
+        display: flex;
+        font-size: 1.2rem;
+        font-weight: 300;
+        height: 2rem;
+        align-items: center;
+
+        .avatar{
+            width: 1.8rem;
+            height: 1.8rem;
+            font-size: 1rem;
+            line-height: 1.9rem;
+            margin: 0 0 0 .5rem;
+            border:none;
+            flex-shrink: 0;
+        }
+    }
+
+    .read-dot{
+        font-size: 1rem;
+        border-radius: .9rem;
+        min-width: 1.8rem;
+        height: 1.8rem;
+        color: #FFF;
+        font-weight: 600;
+        text-align: center;
+        line-height: 1.9rem;
+        background: $text-color;
+    }
+
+    .last{
+        flex-grow: 1;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .date{
+        flex-shrink: 0;
+        margin-left: .5rem;
+    }
+
+    .unread{
+        .subtitle, .name, .date{
+            font-weight: 700;
+        }
+        .date{
+            color: map-get($colors, primary);
+        }
+    }
+
+    .others{
+        position: absolute;
+        top: 4.5rem;
+        right: 4rem;
+        font-size: 1.2rem;
+        font-weight: 700;
+    }
+
+    .avatars{
+        position: absolute;
+        height: 8rem;
+        width: 7.2rem;
+        
+        .avatar{
+            position: absolute;
+            width: 3rem;
+            height: 3rem;
+            line-height: 3rem;
+
+            &:first-child{
+                top:1.8rem;
+                left:1.8rem;
+            }
+            &:nth-child(2){
+                top:3.3rem;
+                left:3.3rem;
+
+                &::before{
+                    content:" ";
+                    bottom: -2px;
+                    right: 0;
+                    position: absolute;
+                    width: .9rem;
+                    height: .9rem;
+                    border-radius: 50%;
+                    border: 2px solid #FFF;
+                    background: $disconnected-clr;
+                }
+            }
+        }
+
+        .avatar:only-child{
+            position: absolute;
+            border: none;
+            width: 4rem;
+            height: 4rem;
+            line-height: 4rem;
+            top: 2rem;
+            left: 2rem;
+
+            &::before{
+                content:" ";
+                bottom: -2px;
+                right: 0;
+                position: absolute;
+                width: .9rem;
+                height: .9rem;
+                border-radius: 50%;
+                border: 2px solid #FFF;
+                background: $disconnected-clr;
+            }
+        }
+
+        &.online{
+            .avatar:only-child::before, .avatar:nth-child(2)::before{
+                background: $connected-clr;                
+            }
+        }
+
+    }
+}

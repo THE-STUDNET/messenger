@@ -1,0 +1,582 @@
+// http://ionicframework.com/docs/theming/
+
+
+// App Global Sass
+// --------------------------------------------------
+// Put style rules here that you want to apply globally. These
+// styles are for the entire app and not just one component.
+// Additionally, this file can be also used as an entry point
+// to import other Sass files to be included in the output CSS.
+//
+// Shared Sass variables, which can be used to adjust Ionic's
+// default Sass variables, belong in "theme/variables.scss".
+//
+// To declare rules for a specific mode, create a child rule
+// for the .md, .ios, or .wp mode classes. The mode class is
+// automatically applied to the <body> element in the app.
+
+// --- Overriding original theme. ---//
+html{
+    font-size: 78.125%;
+}
+
+.button{
+    font-weight: 700;  
+}
+
+.swiper-pagination-bullet{
+    opacity: 1;
+    background: transparent;
+    
+}
+button.swiper-pagination-bullet{
+    border:1px solid map-get($colors, primary);
+}
+.swiper-pagination-bullet-active{
+    background: map-get($colors, primary);
+}
+  
+// Android theme updates
+.button-md{
+    text-transform: none;
+    box-shadow: none;
+
+    &.activated{
+        box-shadow: none;
+    }
+}
+.button-full-md{
+    border-radius: 2px;
+}
+
+.header-md::after{
+    display: none;
+}
+
+// IOS
+.button-ios {
+    border-radius: 2px;
+    height: 4rem;
+    font-size: 1.4rem;
+}
+
+// Custom rules
+
+[m-bot]{
+    margin-bottom: 1.5rem;
+}
+
+[m-top]{
+    margin-top: 1.5rem;
+}
+
+.button.empty{
+    background: transparent;
+    color: $text-color;
+    font-weight: 300;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+}
+
+.button.bordered{
+    background: transparent;
+    border: 1px solid map-get($colors, primary);
+    color: map-get($colors, primary);
+}
+
+.ios .invisibleheader{
+    margin-top: 1.5rem;
+}
+
+.invisibleheader{
+    height: 4rem;
+    line-height: 4rem;
+    display: flex;
+
+    .title{
+        flex-grow:1;
+        font-size: 1.2rem;
+        text-transform: uppercase;
+        font-weight: 700;
+        text-align: center;
+        &:last-child{
+            margin-right: 4rem;
+        }
+        &:first-child{
+            margin-left: 4rem;
+        }
+    }
+}
+
+.dta{
+    position: relative;
+    min-height: 3.4rem;
+    background: $background-clr;
+    border-radius: 2rem;
+
+    textarea{
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top:0;
+        left:0;
+        line-height: 2rem;
+        border:none;
+        background: transparent;
+        resize: none;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        padding: .7rem 2rem;
+    }
+}
+.dta-copy{
+    padding: .7rem 2rem;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    line-height: 2rem;
+    color: transparent;@keyframes sending{
+        0%{
+            height: .9rem
+        }
+        50%{
+            height: .2rem;
+        }
+        100%{
+            height: .9rem;
+        }
+    }
+}
+
+.ios .appheader{
+    padding-top:1.5rem;
+}
+
+.appheader{
+    background: map-get($colors, primary);
+    color: #FFF;
+
+    .top{
+        padding: 0 .5rem;
+        height: 4.2rem;
+        line-height: 4.2rem;
+        display: flex;
+        align-items: center;
+
+        .avatar-container{
+            display: flex;
+            width: 4rem;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-btn{
+            height: 100%;
+        }
+    }
+
+    .search{
+        position: relative;
+        background: $background-clr;
+        height: 4rem;
+
+        .remove{
+            display: none;
+            position: absolute;
+            line-height: 4rem;
+            height: 4rem;
+            top:0;
+            right:0;
+            color: $text-info-clr;
+        }
+
+        &.focused{
+            .placeholder{
+                justify-content: unset;
+            }
+            .label{
+                display: none;
+            }
+            .remove{
+                display: block;
+            }
+        }
+
+        input{
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border:none;
+            background: transparent;
+            padding: 0 4rem;
+            color: $text-color;
+        }
+
+        .placeholder{
+            justify-content: center;
+            display: flex;
+            line-height: 4rem;
+            height: 4rem;
+            font-size: 1.2rem;
+            color: $text-info-clr;
+
+            &.focused{
+                justify-content: unset;
+            }
+
+            .i-zoom{
+                width: 4rem;
+                text-align: center;
+                font-size: 1.6rem;
+                &::before{
+                    line-height: 4rem;
+                }
+            }
+            .label{
+                margin-right: 1rem;
+            }
+        }
+    }
+
+    .title{
+        flex-grow: 1;
+        text-align: center;
+        font-size: 1.2rem;
+        font-weight: 700;
+        &:last-child{
+            margin-right: 4rem;
+        }
+    }
+
+    .logo{
+        margin:auto;
+    }
+
+    button{
+        color:#FFF;
+    }
+}
+
+.head-avatar{
+    font-size: 1rem;
+    position: relative;
+    width: calc( 2rem + 4px);
+    height: calc( 2rem + 4px);
+    line-height: 2rem;
+    text-align: center;
+    background-color: $text-color;
+    border: 2px solid #FFF;
+    border-radius: 50%;
+    background-size: cover;
+}
+
+.avatar{
+    position: relative;
+    border: 2px solid #FFF;
+    border-radius: 50%;
+    background-size: cover;
+    background-color: $text-color;
+    color: #FFF;
+    text-align: center;
+    font-weight: 600;
+}
+
+.icon-btn{
+    width: 4rem;
+    font-size: 1.6rem;
+    background: transparent;
+}
+
+.clean-stack-input{
+    padding-left: 0;
+    padding-bottom: 1rem;
+
+    .label{
+        font-weight: 300;
+    }
+
+    .label-md{
+        color: $text-color;
+    }
+
+    input{
+        font-size: 1.4rem;
+        font-weight: 700;
+    }
+}
+
+.rich-avatar{
+    position: relative;
+    width: 8rem;
+    height: 8rem;
+    line-height: 8rem;
+    font-size: 3rem;
+    color: #FFF;
+    font-weight: 600;
+    text-align: center;
+    border: 2px solid map-get($colors, primary);
+    border-radius: 50%;
+    box-sizing: content-box;
+    background-size: cover;
+
+    &::before{
+        top: calc( -1rem - 2px );
+        left: calc( -1rem - 2px );
+        width: calc( 8rem + 4px );
+        height: calc( 8rem + 4px );
+        display: block;
+        position: absolute;
+        content: " ";
+        border-radius: 50%;
+        border: 1rem solid transparentize( map-get($colors, primary), 0.9 );    
+    }
+
+    &::after{
+        top: calc( -2rem - 2px );
+        left: calc( -2rem - 2px );
+        width: calc( 10rem + 4px );
+        height: calc( 10rem + 4px );
+        display: block;
+        position: absolute;
+        content: " ";
+        border-radius: 50%;
+        border: 1rem solid transparentize( map-get($colors, primary), 0.95 );    
+    }
+
+    .star{
+        position: absolute;
+        &:nth-of-type(1){
+            top: -1rem;
+            left: 0;
+        }
+        &:nth-of-type(2){
+            top: 4rem;
+            left: -2.5rem;
+        }
+        &:nth-of-type(3){
+            top:0;
+            left:7.5rem;
+        }
+        &:nth-of-type(4){
+            top: 6rem;
+            left: 9rem;
+        }
+    }
+}
+
+.background-loading{
+    //opacity:.7;
+    animation: 1s loadingBackground infinite;
+}
+.background-loaded{
+    color:transparent;
+}
+
+@keyframes loadingBackground {
+    0%{ background-color: lighten( $text-color, 30% ); }
+    50%{ background-color: $text-color; }
+    100%{ background-color: lighten( $text-color, 30% ); }
+}
+
+.loader{
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-gradient{
+    background-size: 200%;
+    background-image: linear-gradient(270deg, $loading-gradient-clr, #FFF, $loading-gradient-clr);
+    animation: 1.5s linear loadingGradient infinite;
+}
+
+@-webkit-keyframes loadingGradient {
+    0%{ background-position: 200% 0; }
+    100%{ background-position: 0 0; }
+}
+@-moz-keyframes loadingGradient {
+    0%{ background-position: 200% 0; }
+    100%{ background-position: 0 0; }
+}
+@keyframes loadingGradient {
+    0%{ background-position: 200% 0; }
+    100%{ background-position: 0 0; }
+}
+
+
+.sending-animation{
+    display: flex;
+    align-items: center;
+    height: .9rem;
+    width: 1.4rem;
+
+    div{
+        width:.2rem;
+        height:.9rem;
+        background: map-get($colors, primary);
+        animation: 1s sending infinite;
+    }
+
+    div:nth-child(2){
+        animation-delay: .5s;
+    }
+
+    div + div{
+        margin-left:.4rem;
+    }
+}
+
+@keyframes sending{
+    0%{
+        height: .9rem
+    }
+    50%{
+        height: .2rem;
+    }
+    100%{
+        height: .9rem;
+    }
+}
+
+.nolistresult{
+    display: flex;
+    height: 70%;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    color: #999;
+    line-height: 2.6rem;
+
+    .icon{
+        margin-bottom: 4rem;
+        font-size: 7rem;
+        color: #CCC;
+    }
+    .title{
+        font-weight: 700;
+    }
+    button{
+        margin-top:2rem;
+    }
+}
+
+.twic-alert{
+    ion-backdrop{
+        opacity: .9 !important;
+        background: $backdrop-clr;
+    }
+
+    .alert-wrapper{
+        border-radius: 4px;
+        padding: 0 0 2rem;
+        box-shadow: none;
+    }
+
+    .alert-head{
+        text-align: center;
+        padding: 2rem;
+    }
+
+    .alert-title{
+        text-align: center;
+        font-size: 2.5rem;
+        line-height: 3.4rem;
+        font-weight: 700;
+    }
+
+    .alert-sub-title{
+        font-size: 1.6rem;
+        line-height: 2.6rem;
+        color: $text-color;
+        margin-top:1.5rem;
+    }
+
+    .alert-button{
+        text-align: center;
+        font-weight: 700;
+        min-width: 50%;
+        flex-grow:0;
+        padding: 0 1rem;
+        border-top:0;
+        font-size: 1.4rem;
+        border-radius: 2px;
+        height: 4rem;
+        margin: auto;
+
+        .button-inner{
+            justify-content: center;
+        }
+    }
+}
+/*
+.alert-modal{
+    padding:20% 3rem;
+
+    ion-backdrop{
+        opacity: .9 !important;
+        background: $backdrop-clr;
+        visibility: visible;
+    }
+
+    .modal-wrapper{
+        position: relative;
+        height: auto;
+        contain: none;
+    }
+
+    .ion-page{
+        height: auto;
+        contain: none;
+    }
+
+    .alert-content{
+        text-align: center;
+        color: $text-color;
+        background:#FFF;
+        border-radius: 4px;
+        padding: 2rem 4rem;
+    }
+
+    .title{
+        line-height: 4rem;
+        font-size: 2.5rem;
+        font-weight: 700;
+    }
+
+    .description{
+        font-size: 1.6rem;
+        line-height: 2.6rem;
+    }
+
+    .alert-pic{
+        width: 15rem;
+        display: block;
+        margin: 2rem auto;
+    }
+
+    .buttons{
+        display: flex;
+        & > *{
+            flex-grow: 1;
+            margin:0 1rem;
+        }
+        & > :first-child{
+            margin-left:0;
+        }
+        & > :last-child{
+            margin-right:0;
+        }
+    }
+}*/
+
+@media only screen and (min-height: $modal-inset-min-height-small ) and (min-width: $modal-inset-min-width){
+    .alert-modal .modal-wrapper{
+        position: absolute;
+    }
+}
+
+.primary{
+    background-color: map-get($colors, primary) !important;
+    color: #FFF !important;
+}

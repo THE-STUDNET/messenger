@@ -1,0 +1,131 @@
+.message-container{
+    width: 100%;
+    margin-bottom: .3rem;
+    display: flex;
+    flex-direction: column;
+    
+    .author{
+        display: flex;
+        font-size: 1.2rem;
+        align-items: center;
+        margin: 1.5rem auto .5rem 2rem;
+        height: 3rem;
+    }
+
+    .name{
+        font-weight: 700;
+        margin-left: 1rem;
+    }
+
+    &.me .author{
+        margin: 1.5rem 2rem 0 auto
+    }
+
+    .author{
+        .avatar{
+            position: relative;
+            top: 3px;
+            width: 3rem;
+            height: 3rem;
+            line-height: 3rem;
+            border:none;
+        }
+    }
+
+    .message-text{
+        font-size: 1.4rem;
+        border-radius: .6rem;
+        border: 1px solid $border-clr;
+        margin: 0 auto 0 5.8rem;
+        line-height: 2.4rem;
+        padding: .2rem 1rem;
+        max-width: calc( 100% - 8rem );
+        &.notrounded{
+            border-radius: .6rem .6rem .6rem 0;
+        }
+    }
+
+    &.me .message-text{
+        border:none;
+        background-color: map-get($colors, primary);
+        color: #FFF;
+        margin: 0 2rem 0 auto;
+        text-align: right;
+        &.notrounded{
+            border-radius: .6rem .6rem 0 .6rem;
+        }
+    }
+
+    &.sending .message-text{
+        background: #FFF;
+        border: 1px solid map-get($colors, primary);
+        color: map-get($colors, primary);
+    }
+
+    &.error .message-text{
+        background: #FFF;
+        border: 1px solid $red;
+        color: $red;
+    }
+
+    .error-text{
+        color: $red;
+        font-size: 1.2rem;
+        .i{
+            vertical-align: middle;
+            margin-right: .5rem;
+            &::before{
+                line-height: 2.4rem;
+            }
+        }
+    }
+
+    .sending-animation{
+        float: right;
+        margin: .8rem 0 .8rem .5rem;
+    }
+
+    .hour{
+        font-weight: 300;
+        font-size: 1rem;
+        line-height: 1.4rem;
+        margin-left: .5rem;
+        vertical-align: baseline;
+        white-space: nowrap;
+    }
+
+    .last-read{
+        text-align: right;
+        margin: .5rem 2rem 0 0;
+        .avatar{
+            display: inline-block;
+            border: none;
+            margin-left: 6px;
+            height: 1.4rem;
+            width: 1.4rem;
+            line-height: 1.4rem;
+            font-size: .9rem;
+        }
+    }
+}
+
+.day-separator{
+    margin: 2rem 2.5rem 0 2.5rem;
+    line-height: 2.4rem;
+    font-size: 1.2rem;
+    font-weight: 300;
+    display: flex;
+    align-items: center;
+
+    .line{
+        flex-grow: 1;
+        height: 1px;
+        background: $border-clr;
+    }
+
+    .day{
+        margin: 0 3rem;
+    }
+}
+
+.day-separator + .message-container .author{ margin-top:0rem; }

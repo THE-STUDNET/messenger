@@ -1,0 +1,81 @@
+page-conversation{
+
+    .appheader{
+        .bottom{
+            position: relative;
+            text-align: center;
+            padding-bottom: 1.8rem;
+        }
+
+        .subtitle{
+            position: relative;
+            top: -.8rem;
+            font-size: 1.2rem;
+            line-height: 2rem;
+            height: 2rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .avatars{
+            position: absolute;
+            bottom: -1.5rem;
+            left: 0;
+            width: 100%;
+            height: calc( 2.7rem + 6px);
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+        }
+
+        .avatar{
+            display: inline-block;
+            height: calc( 2.7rem + 6px);
+            width: calc( 2.7rem + 6px);
+            line-height: 2.7rem;
+            border-width: 3px;
+            margin:0 -.5rem;      
+        }
+        .title{
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+
+    .sender{
+        position: relative;
+        padding: .4rem 2rem;
+        background: #FFF;
+
+        .send{
+            position: absolute;
+            width: 4rem;
+            height: 3rem;
+            bottom: .5rem;
+            right: 2rem;
+            color: map-get($colors, primary);
+
+            &::before{
+                position: relative;
+                top:.2rem;
+            }
+        }
+
+        .dta{        
+            .dta-copy, textarea{
+                padding:.7rem 5rem .7rem 2rem;
+                font-size: 1.3rem;
+            }
+        }
+    }
+
+    .scroll-content{
+        padding-bottom: 2rem;
+    }
+
+    .hidequeue + .queued-messages{
+        display: none;
+    }
+}

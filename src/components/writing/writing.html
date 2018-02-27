@@ -1,0 +1,17 @@
+<div class="writing message-container">
+    <div class="author">
+        <div class="avatar" 
+            [userStatus]="[writer.datum.id]"
+            [backgroundImg]="writer.datum.avatar | dmsUrl">
+            {{ writer.datum | userletter }}
+        </div>
+        <div class="name">{{ writer.datum | username:false:true }}</div>
+    </div>
+    <div class="message-text notrounded">
+        <div class="writing-text">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+    </div>
+</div>

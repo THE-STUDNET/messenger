@@ -1,0 +1,89 @@
+user-result{
+
+    .user{
+        position:relative;
+        display: block;
+    }
+
+    .content{
+        line-height: 2rem;
+        height: 8rem;
+        padding: 2rem 4rem 2rem 0;
+        margin-left: 7.2rem;
+        border-bottom: 1px solid $border-clr;
+    }
+
+    .i-chevron-right{
+        position: absolute;
+        top:0;
+        right: 2rem;
+        font-size: .8rem;
+        line-height: 8rem;
+    }
+
+    .name{
+        font-weight: 600;
+        font-size: 1.4rem;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .subtitle{
+        display: flex;
+        font-size: 1.2rem;
+        font-weight: 300;
+        flex-grow: 1;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .avatar{
+        position: absolute;
+        border: none;
+        width: 4rem;
+        height: 4rem;
+        top: 2rem;
+        left: 2rem;
+        line-height: 4rem;
+        font-weight: 600;
+
+        &::before{
+            content:" ";
+            bottom: -2px;
+            right: 0;
+            position: absolute;
+            width: .9rem;
+            height: .9rem;
+            border-radius: 50%;
+            border: 2px solid #FFF;
+            background: $disconnected-clr;
+        }
+
+        &.online::before{
+            background: $connected-clr;
+        }
+    }
+
+    .loading-user{
+        position: relative;
+        .avatar{
+            background: $loading-gradient-clr;
+        }
+    }
+
+    .mline{
+        height: 1rem;
+        border-radius: .5rem;
+        margin: .5rem 0;
+        width: 75%;
+    }
+    
+    .sline{
+        height: .8rem;
+        border-radius: .4rem;
+        margin: 1.1rem 0 .6rem 0;
+    }
+
+}

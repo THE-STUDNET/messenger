@@ -1,0 +1,76 @@
+@charset "UTF-8";
+
+@font-face {
+  font-family: "messenger";
+  src:url("../../assets/fonts/messenger/messenger.eot");
+  src:url("../../assets/fonts/messenger/messenger.eot?#iefix") format("embedded-opentype"),
+    url("../../assets/fonts/messenger/messenger.woff") format("woff"),
+    url("../../assets/fonts/messenger/messenger.ttf") format("truetype"),
+    url("../../assets/fonts/messenger/messenger.svg#messenger") format("svg");
+  font-weight: normal;
+  font-style: normal;
+
+}
+
+[data-icon]:before {
+  font-family: "messenger" !important;
+  content: attr(data-icon);
+  font-style: normal !important;
+  font-weight: normal !important;
+  font-variant: normal !important;
+  text-transform: none !important;
+  speak: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+[class^="i-"]:before,
+[class*=" i-"]:before {
+  font-family: "messenger" !important;
+  font-style: normal !important;
+  font-weight: normal !important;
+  font-variant: normal !important;
+  text-transform: none !important;
+  speak: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.i-arrow-left:before {
+  content: "\63";
+}
+.i-edit:before {
+  content: "\62";
+}
+.i-checked:before {
+  content: "\64";
+}
+.i-remove:before {
+  content: "\65";
+}
+.i-zoom:before {
+  content: "\66";
+}
+.i-send:before {
+  content: "\67";
+}
+.i-attach:before {
+  content: "\68";
+}
+.i-alert:before {
+  content: "\69";
+}
+.i-chevron-right:before {
+  content: "\6a";
+}
+.i-message:before {
+  content: "\61";
+}
+.i-users:before {
+  content: "\6b";
+}
+.i-webcam:before {
+  content: "\6c";
+}

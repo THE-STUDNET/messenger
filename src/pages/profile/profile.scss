@@ -1,0 +1,46 @@
+page-profile{
+
+    .avatar{
+        width: 8rem;
+        height: 8rem;
+        margin: 2rem auto;
+    }
+
+    .name{
+        text-align: center;
+        margin: 1rem 0;
+        font-size: 1.4rem;
+        font-weight: 600;
+    }
+
+    .connections,.organization{
+        text-align: center;
+        line-height: 2rem;
+        font-size: 1.2rem;
+        font-weight: 300;
+    }
+
+    .page-info{
+        line-height: 5rem;
+        height: 5rem;
+        border-bottom: 1px solid $border-clr;
+        display: flex;
+
+        .i-chevron-right{
+            font-size: .8rem;
+            margin: 0 2rem;
+        }
+    }
+
+    .inf{
+        flex-grow: 1;
+        font-weight: 600;
+        font-size: 1.4rem;
+        margin-left: 2rem;
+    }
+
+    .user-info{
+        margin-bottom: 2rem;
+    }
+
+}

@@ -1,0 +1,36 @@
+<ion-header>
+    <div class="appheader">
+        <div class="top">
+            <button class="icon-btn i i-arrow-left"
+                (tap)="back()"></button>
+            <div class="title">NEW MESSAGE</div>
+        </div>
+        <div class="search" [class.focused]="focus || subject">
+            <input (focus)="focus=true" (blur)="focus=false" type="text" [(ngModel)]="subject" (keyup)="search()" name="subject">
+            <button class="icon-btn i i-remove remove" (click)="search('')"></button>
+            <div class="placeholder" >
+                <span class="i i-zoom"></span>
+                <span class="label">Search</span>
+            </div>
+        </div>
+    </div>    
+</ion-header>
+
+<ion-content>
+    <div class="loader" *ngIf="abortPromise">
+        <ion-spinner></ion-spinner>
+    </div>
+
+    <div class="noresult" *ngIf="!abortPromise && !results.length">
+        Sorry, can't found someone matching your search...
+    </div>
+
+    <ion-list no-lines>
+        <user-result *ngFor="let user_id of results; trackBy: trackByResult" [user-id]="user_id"
+            (tap)="tapOnResult(user_id)"></user-result>
+    </ion-list>
+
+    <ion-infinite-scroll (ionInfinite)="next($event)" [enabled]="scrollEnabled">
+        <ion-infinite-scroll-content></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+</ion-content>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="11px" height="11px" viewBox="0 0 11 11" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 48.2 (47327) - http://www.bohemiancoding.com/sketch -->
+    <title>Star</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="authentification-password" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" transform="translate(-144.000000, -77.000000)">
+        <g id="Group-2" transform="translate(121.000000, 71.000000)" stroke="#0DAFAC">
+            <g id="Group-4" transform="translate(35.087343, 11.159705) rotate(-20.000000) translate(-35.087343, -11.159705) translate(23.587343, 3.659705)">
+                <polygon id="Star" points="5.40307379 7.9131319 2.00896124 8.92565394 3.00307379 5.46868746 2.00896124 2.01172097 5.40307379 3.02424301 8.79718634 2.01172097 7.80307379 5.46868746 8.79718634 8.92565394"></polygon>
+            </g>
+        </g>
+    </g>
+</svg>

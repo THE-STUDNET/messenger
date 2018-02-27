@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="194px" height="165px" viewBox="0 0 194 165" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 48.2 (47327) - http://www.bohemiancoding.com/sketch -->
+    <title>Group 2</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="authentification" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" transform="translate(-93.000000, -217.000000)">
+        <g id="Group-2" transform="translate(85.000000, 217.000000)">
+            <path d="M110.324219,164.191406 C137.938456,164.191406 200.285156,107.446269 200.285156,79.8320312 C200.285156,52.2177938 125.172831,21.71875 97.5585937,21.71875 C69.9443563,21.71875 20.3632812,61.9013875 20.3632812,89.515625 C20.3632812,117.129862 82.7099813,164.191406 110.324219,164.191406 Z" id="Oval-3" fill="#DBF3F3" opacity="0.400000006" transform="translate(110.324219, 92.955078) scale(-1, 1) translate(-110.324219, -92.955078) "></path>
+            <g id="circle-08" transform="translate(78.000000, 59.000000)">
+                <circle id="Oval" fill-opacity="0.15" fill="#0DAFAC" cx="33.5" cy="32.5" r="30"></circle>
+                <path d="M30.5,40.5 C24.425,40.5 19.5,35.575 19.5,29.5 L19.5,26.5 C19.5,20.425 24.425,15.5 30.5,15.5 C36.575,15.5 41.5,20.425 41.5,26.5 L41.5,29.5 C41.5,35.575 36.575,40.5 30.5,40.5 Z" id="Shape" stroke="#0DAFAC" stroke-linecap="square"></path>
+                <path d="M13.029,54.891 C15.473,49.921 20.588,46.5 26.5,46.5 L34.5,46.5 C40.406,46.5 45.524,49.93 47.971,54.891" id="Shape" stroke="#0DAFAC"></path>
+                <circle id="Oval" stroke="#0DAFAC" stroke-linecap="square" cx="30.5" cy="30.5" r="30"></circle>
+            </g>
+            <g id="chat-46" transform="translate(181.500000, 74.000000) rotate(16.000000) translate(-181.500000, -74.000000) translate(163.000000, 57.000000)">
+                <polyline id="Shape" stroke="#0DAFAC" stroke-width="1.20000005" stroke-linecap="square" points="29.2419355 9.10714286 36.4032258 9.10714286 36.4032258 27.3214286 31.6290323 27.3214286 31.6290323 33.3928571 23.2741935 27.3214286 16.1129032 27.3214286"></polyline>
+                <polygon id="Shape" fill="#CFEFEF" points="31.6290323 3.03571429 2.98387097 3.03571429 2.98387097 23.6785714 8.9516129 23.6785714 8.9516129 32.1785714 18.5 23.6785714 31.6290323 23.6785714"></polygon>
+                <text id="3" font-family="OpenSans-Bold, Open Sans" font-size="11" font-weight="bold" fill="#97D1D1">
+                    <tspan x="11.6678959" y="15.2040327">3</tspan>
+                </text>
+                <polygon id="Shape" stroke="#0DAFAC" stroke-width="1.20000005" stroke-linecap="square" points="29.2419355 0.607142857 0.596774194 0.607142857 0.596774194 21.25 6.56451613 21.25 6.56451613 29.75 16.1129032 21.25 29.2419355 21.25"></polygon>
+            </g>
+            <g id="Group" transform="translate(32.364457, 72.190025) rotate(-30.000000) translate(-32.364457, -72.190025) translate(7.864457, 51.190025)">
+                <g id="chat-round" transform="translate(-0.000000, 0.000000)">
+                    <path d="M43.3,31.1 C46.6,27.9 48.5,23.9 48.5,19.5 C48.5,9.6 38.7,1.5 26.5,1.5 C14.3,1.5 4.5,9.6 4.5,19.5 C4.5,29.4 14.3,37.5 26.5,37.5 C28.6,37.5 30.7,37.2 32.7,36.8 L44.5,41.5 L43.3,31.1 Z" id="Shape" fill="#CFEFEF"></path>
+                    <path d="M39.6800496,29.8289133 C42.9800496,26.6289133 44.8800496,22.6289133 44.8800496,18.2289133 C44.8800496,8.32891327 35.0800496,0.22891327 22.8800496,0.22891327 C10.6800496,0.22891327 0.880049579,8.32891327 0.880049579,18.2289133 C0.880049579,28.1289133 10.6800496,36.2289133 22.8800496,36.2289133 C24.9800496,36.2289133 27.0800496,35.9289133 29.0800496,35.5289133 L40.8800496,40.2289133 L39.6800496,29.8289133 Z" id="Shape" stroke="#0DAFAC" stroke-linecap="square"></path>
+                </g>
+                <circle id="Oval-4" fill="#97D1D1" cx="13" cy="19" r="2"></circle>
+                <circle id="Oval-4" fill="#97D1D1" cx="23" cy="19" r="2"></circle>
+                <circle id="Oval-4" fill="#97D1D1" cx="33" cy="19" r="2"></circle>
+            </g>
+            <g id="chat-45" transform="translate(115.492404, 22.913176) rotate(-10.000000) translate(-115.492404, -22.913176) translate(87.992404, 4.913176)">
+                <polygon id="Shape" fill="#CFEFEF" points="3.76421952 2.17364818 54.5877489 2.17364818 54.5877489 27.7736482 38.705396 27.7736482 27.5877489 35.7736482 27.5877489 27.7736482 3.76421952 27.7736482"></polygon>
+                <ellipse id="Oval-2" fill="#97D1D1" cx="11.1176471" cy="10.4" rx="3.97058824" ry="4"></ellipse>
+                <rect id="Rectangle" fill="#97D1D1" x="19.8529412" y="9.6" width="25.4117647" height="2.4" rx="1.2"></rect>
+                <rect id="Rectangle" fill="#97D1D1" x="19.8529412" y="16" width="14.2941176" height="2.4" rx="1.2"></rect>
+                <polygon id="Shape" stroke="#0DAFAC" stroke-linecap="square" points="0.397058824 0.4 51.2205882 0.4 51.2205882 26 35.3382353 26 24.2205882 34 24.2205882 26 0.397058824 26"></polygon>
+            </g>
+        </g>
+    </g>
+</svg>

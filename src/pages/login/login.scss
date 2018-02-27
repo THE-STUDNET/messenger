@@ -1,0 +1,17 @@
+page-login {
+    #logo{
+        min-width: 48px;
+        max-width: 80px;
+    }
+
+    [ion-button]{
+        width: calc( 100% - 32px );
+
+        &.blue{
+            background-color: $blue;
+        }
+        &.green{
+            background-color: $green;
+        }
+    }
+}

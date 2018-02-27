@@ -1,0 +1,43 @@
+<ion-header>
+    <div class="appheader">
+        <div class="top">
+            <div class="avatar-container" (tap)="goToProfile()">
+                <div *ngIf="user" class="head-avatar" 
+                    [backgroundImg]="user.datum.avatar | dmsUrl">{{ user.datum | userletter }}</div>
+            </div>
+            <img class="logo" src="assets/images/logo.svg">
+    
+            <button class="icon-btn i i-edit"
+                (tap)="goToNewMessage()"></button>
+        </div>
+        
+    </div>    
+</ion-header>
+
+<ion-content>
+    <div class="loader" *ngIf="loading">
+        <ion-spinner></ion-spinner>
+    </div>
+
+    <ion-refresher (ionRefresh)="refresh($event)" [enabled]="!loading">
+        <ion-refresher-content></ion-refresher-content>
+    </ion-refresher>
+
+    <ion-list no-lines *ngIf="!loading">
+        <conversation *ngFor="let cvn of conversationsPaginator.list;" 
+            [conversationId]="cvn.id"></conversation>
+    </ion-list>
+
+    <div *ngIf="!loading && !conversationsPaginator.list.length" class="nolistresult">
+        <div class="icon i-message"></div>        
+        <div class="title">No messages</div>
+        <div class="subtitle">Get in touch with your peers!</div>
+        <button ion-button (tap)="goToNewMessage()">Start a discussion</button>
+    </div>
+
+
+    <ion-infinite-scroll [enabled]="conversationsPaginator.list.length" (ionInfinite)="next($event)">
+        <ion-infinite-scroll-content></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+
+</ion-content>

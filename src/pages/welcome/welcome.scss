@@ -1,0 +1,39 @@
+
+page-welcome {
+    h1 {
+        margin-top: 5rem;
+        font-family: "Open Sans";
+        font-size: 2.5rem;
+        font-weight: bold;
+        line-height: 3.4rem;
+        text-align: center;
+        /* OLD
+        margin-top: 6.5rem;
+        */
+    }
+
+    .subtitle{
+        text-align: center;
+        line-height: 2.6rem;
+        font-size: 1.6rem;
+    }
+
+    .scroll-content{
+        padding: 0 3rem;
+    }
+    
+    .empty{
+        display: block;
+        margin: 0 auto 1rem;
+    }
+
+    #welcome-pic{
+        margin: 4rem auto;
+        min-width: 16rem;
+        display: block;
+        /* OLD
+        margin: 5rem auto;
+        min-width: 20rem;
+        */
+    }
+}

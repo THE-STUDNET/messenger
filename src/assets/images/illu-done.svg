@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="160px" height="129px" viewBox="0 0 160 129" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 48.2 (47327) - http://www.bohemiancoding.com/sketch -->
+    <title>Group</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="authentification-pas_inscrit-" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" transform="translate(-113.000000, -158.000000)">
+        <g id="Group" transform="translate(113.000000, 158.000000)">
+            <path d="M60.8554687,128.398438 C88.4697062,128.398438 159.871094,91.0556437 159.871094,63.4414062 C159.871094,35.8271688 88.4697062,0 60.8554688,0 C33.2412313,0 -1.8189894e-12,20.2842 -1.8189894e-12,47.8984375 C-1.8189894e-12,75.512675 33.2412313,128.398438 60.8554687,128.398438 Z" id="Oval-3" fill="#DBF3F3" opacity="0.400000006"></path>
+            <g id="Group-4" transform="translate(61.000000, 14.500000) scale(1, -1) rotate(20.000000) translate(-61.000000, -14.500000) translate(55.000000, 9.000000)">
+                <polygon id="Star" fill-opacity="0.15" fill="#0DAFAC" points="7.2 8.55555556 3.80588745 9.5680776 4.8 6.11111111 3.80588745 2.65414463 7.2 3.66666667 10.5941125 2.65414463 9.6 6.11111111 10.5941125 9.5680776"></polygon>
+                <polygon id="Star" stroke="#0DAFAC" points="4.8 7.33333333 1.40588745 8.34585537 2.4 4.88888889 1.40588745 1.4319224 4.8 2.44444444 8.19411255 1.4319224 7.2 4.88888889 8.19411255 8.34585537"></polygon>
+            </g>
+            <g id="Group-4" opacity="0.5" transform="translate(138.000000, 84.500000) scale(1, -1) rotate(20.000000) translate(-138.000000, -84.500000) translate(132.000000, 79.000000)">
+                <polygon id="Star" fill-opacity="0.15" fill="#0DAFAC" points="7.2 8.55555556 3.80588745 9.5680776 4.8 6.11111111 3.80588745 2.65414463 7.2 3.66666667 10.5941125 2.65414463 9.6 6.11111111 10.5941125 9.5680776"></polygon>
+                <polygon id="Star" stroke="#0DAFAC" points="4.8 7.33333333 1.40588745 8.34585537 2.4 4.88888889 1.40588745 1.4319224 4.8 2.44444444 8.19411255 1.4319224 7.2 4.88888889 8.19411255 8.34585537"></polygon>
+            </g>
+            <g id="Group-4" transform="translate(15.000000, 64.500000) scale(1, -1) rotate(20.000000) translate(-15.000000, -64.500000) translate(10.000000, 60.000000)">
+                <polygon id="Star" fill-opacity="0.15" fill="#0DAFAC" points="6 7 3.17157288 7.82842712 4 5 3.17157288 2.17157288 6 3 8.82842712 2.17157288 8 5 8.82842712 7.82842712"></polygon>
+                <polygon id="Star" stroke="#0DAFAC" points="4 6 1.17157288 6.82842712 2 4 1.17157288 1.17157288 4 2 6.82842712 1.17157288 6 4 6.82842712 6.82842712"></polygon>
+            </g>
+            <g id="time-3" transform="translate(41.000000, 33.000000)">
+                <circle id="Oval" fill="#CFEFEF" cx="36.5" cy="32.5" r="30"></circle>
+                <path d="M36.328,26.672 L44.5,18.5" id="Shape" stroke="#0DAFAC"></path>
+                <path d="M17.5,13.5 L30.672,26.672" id="Shape" stroke="#0DAFAC"></path>
+                <circle id="Oval" stroke="#0DAFAC" stroke-linecap="square" cx="33.5" cy="30.5" r="30"></circle>
+                <circle id="Oval" stroke="#0DAFAC" fill="#FFFFFF" stroke-linecap="square" cx="33.5" cy="29.5" r="4"></circle>
+                <path d="M33.5,5.5 L33.5,8.5" id="Shape" stroke="#0DAFAC" stroke-linecap="square"></path>
+                <path d="M57.5,29.5 L54.5,29.5" id="Shape" stroke="#0DAFAC" stroke-linecap="square"></path>
+                <path d="M33.5,53.5 L33.5,50.5" id="Shape" stroke="#0DAFAC" stroke-linecap="square"></path>
+                <path d="M9.5,29.5 L12.5,29.5" id="Shape" stroke="#0DAFAC" stroke-linecap="square"></path>
+                <polygon id="Triangle" stroke="#18B3B0" fill="#FFFFFF" points="4.5 25 9 34 0 34"></polygon>
+            </g>
+        </g>
+    </g>
+</svg>

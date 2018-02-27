@@ -1,0 +1,40 @@
+<ion-header>
+        <div class="appheader">
+            <div class="top">
+                <button class="icon-btn i i-arrow-left"
+                    (tap)="back()"></button>
+                <div class="title">MY PROFILE</div>
+            </div>
+        </div>    
+    </ion-header>
+    
+    <ion-content>
+        <div class="loader" *ngIf="loading">
+            <ion-spinner></ion-spinner>
+        </div>
+    
+        <div *ngIf="!loading">
+            <div class="user-info">
+                <div class="avatar" [userStatus]="[user.datum.id]" 
+                    [backgroundImg]="user.datum.avatar | dmsUrl">
+                    {{ user.datum | userletter }}
+                </div>
+
+                <div class="name">{{ user.datum | username }}</div>
+                <div class="organization">{{ page.datum.title }}</div>
+                <div class="connections">{{ user.datum.contacts_count }} connections</div>
+            </div>
+            <div class="page-info" (tap)="openUserPages('courses')">
+                <div class="inf">My Courses ({{ coursesCount }})</div>
+                <div class="i i-chevron-right"></div>
+            </div>
+            <div class="page-info" (tap)="openUserPages('groups')">
+                <div class="inf">My Clubs ({{ groupsCount }})</div>
+                <div class="i i-chevron-right"></div>
+            </div>
+            <div class="page-info" (tap)="openUserPages('events')">
+                <div class="inf">My Events ({{ eventsCount }})</div>
+                <div class="i i-chevron-right"></div>
+            </div>
+        </div>
+    </ion-content>

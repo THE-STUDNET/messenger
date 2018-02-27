@@ -1,0 +1,27 @@
+<ion-header>
+    <div class="invisibleheader">
+        <button class="icon-btn i i-arrow-left" (click)="back()"></button>
+        <span class="title">Sign in</span>
+    </div>    
+</ion-header>
+
+<ion-content>
+
+    <div class="subtitle">Almost done!</div>
+
+    <img id="almost-signin-pic" src="assets/images/illu-done.svg" margin>
+
+    <div class="description">
+        <span>You have received an invitation but your account is not created yet. A link has actually been sent to your email</span>
+        <b>{{ email }}</b>.
+        <br><br>
+        <span>If no email has arrived, check your spam folder.</span>
+    </div>
+
+    <div class="separator"></div>
+
+    <div class="subtitle">Still having problems?</div>
+
+    <button m-top full ion-button (click)="resendInvitation()">Resend the invitation</button>
+
+</ion-content>
