@@ -36,8 +36,8 @@ $RECYCLE.BIN/
 Thumbs.db
 UserInterfaceState.xcuserstate
 
-config/*
-!config/localhost
+configs/*
+!configs/localhost/*
 
 build.json
 twicm.keystore
