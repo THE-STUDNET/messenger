@@ -222,7 +222,7 @@ export class ConversationPage {
             setTimeout( ()=>{
                 this.writer = undefined;
                 this.cd.markForCheck();
-            }, 1000 );
+            }, 1200 );
         }
     }
 
@@ -271,7 +271,7 @@ export class ConversationPage {
             if( !this.typing ){
                 this.typing = true;
                 this.socket.emit('ch.writing',{ id:this.conversation.id, users: this.users });
-                setTimeout( ()=>{ this.typing=false; }, 1000 );
+                setTimeout( ()=>{ this.typing=false; }, 900 );
             }
         }
     }

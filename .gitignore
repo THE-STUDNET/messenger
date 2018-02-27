@@ -39,5 +39,7 @@ UserInterfaceState.xcuserstate
 configs/*
 !configs/localhost/*
 
+src/const/configuration.ts
+
 build.json
 twicm.keystore
