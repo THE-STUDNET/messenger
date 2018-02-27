@@ -23,7 +23,7 @@ export class ForgotPasswordPage {
             }).present();
         }, () => {
             this.toastCtrl.create({
-                message: 'Sorry an error occured !',
+                message: 'Sorry an error occured!',
                 duration: 3000
             }).present();
         });

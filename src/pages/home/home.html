@@ -24,7 +24,7 @@
     </ion-refresher>
 
     <ion-list no-lines *ngIf="!loading">
-        <conversation *ngFor="let cvn of conversationsPaginator.list;" 
+        <conversation *ngFor="let cvn of conversationsPaginator.list; trackBy: trackByConversation" 
             [conversationId]="cvn.id"></conversation>
     </ion-list>
 

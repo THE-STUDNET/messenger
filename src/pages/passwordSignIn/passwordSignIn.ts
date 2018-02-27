@@ -33,7 +33,7 @@ export class PasswordSignInPage {
             });
         }else{
             this.toastCtrl.create({
-                message: 'Password is empty !',
+                message: 'Password is empty!',
                 duration: 3000
             }).present();
         }

@@ -21,7 +21,6 @@ export class MessageComponent {
     constructor( public account:Account, public userModel:UserModel, public pipesProvider:PipesProvider ) {}
 
     ngOnChanges(){
-        console.log('Change?!', this.messageId );
         if( this.messageId ){
             this.message = this.paginator.list[this.paginator.indexes.indexOf(this.messageId)];
         }

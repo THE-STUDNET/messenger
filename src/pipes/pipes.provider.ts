@@ -41,11 +41,6 @@ export class PipesProvider {
 
     userletter( user: any ): string {
         return (user.nickname||user.firstname||user.lastname||user.email)[0];
-        /*if( user && user.avatar ){
-            return;
-        }else{
-            
-        }*/
     }
 
     initials( user: any ): string{
@@ -89,10 +84,13 @@ export class PipesProvider {
                 diff = now.getTime() - d.getTime();
 
             if( diff < durations.minute ){
-                return 'Now.';
+                return 'Now';
             }
             else if( now.toDateString() === d.toDateString() ){
-                return d.getHours()+':'+d.getMinutes();
+                let h = d.getHours(), 
+                    hour = h%12,
+                    ext = h > 11?'PM':'AM';
+                return (!hour?'12':hour)+':'+('0'+d.getMinutes()).slice(-2)+' '+ext;
             }else if( diff < durations.day*6 ){
                 return days[d.getDay()];
             }else if( diff < durations.year ){

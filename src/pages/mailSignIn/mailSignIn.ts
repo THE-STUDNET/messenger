@@ -37,13 +37,13 @@ export class MailSignInPage {
             },() => {
                 this.checking = undefined;
                 this.toastCtrl.create({
-                    message: 'Sorry an error occured !',
+                    message: 'Sorry an error occured!',
                     duration: 3000
                 }).present();
             });
         }else{
             this.toastCtrl.create({
-                message: 'Email is empty !',
+                message: 'Email is empty!',
                 duration: 3000
             }).present();
         }

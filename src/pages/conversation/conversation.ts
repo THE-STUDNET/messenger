@@ -10,6 +10,8 @@ import { WebSocket, SoundsManager } from '../../providers/shared/shared.module';
 import { Account, ConversationModel, UserModel, MessagesPaginatorProvider,  
     PageModel, ConversationService, ConversationUnreadDateModel } from '../../providers/api/api.module';
 
+import { _getDeferred } from '../../functions/getDeferred';
+
 @Component({
   selector: 'page-conversation',
   templateUrl: 'conversation.html',
@@ -39,6 +41,7 @@ export class ConversationPage {
     public onRefresh: any;
     public refreshingPromise: Promise<any>;
     public onMessageLoaded:any;
+    public writingTimeout: any;
 
     public socketListeners: any = {};
 
@@ -78,7 +81,7 @@ export class ConversationPage {
                         });
                     }else{
                         this.creationInfos = { users: this.users };
-                        this.load();
+                        this.loadVirtualConversation();
                     }
                 });
             }else{
@@ -95,44 +98,54 @@ export class ConversationPage {
         }
     }
 
-    load(){
-        if( this.conversation ){       
-            
-            // Set messages paginator & get last messages...
-            this.messagesPaginator = this.msgPaginatorProvider.getPaginator(this.conversation.id);
-            // Listen to paginator self updates ( When a message is sent the paginator refresh its own list ).
-            this.events.on('cvn'+this.conversation.id+'.messages.update',this.onRefresh);
-            // Listen to websocket
-            this.ws.get().then( socket => {
-                this.socket = socket;
-                this._addSocketListener('ch.message', this._onWSMessage.bind(this) );
-                this._addSocketListener('ch.writing', this._onWSWriting.bind(this) );
-                this._addSocketListener('ch.read', this._onWSRead.bind(this) );
-            });
-            // Get users informations...
-            let p1 = this.loadUsers();  
-            // Get messages...
-            let p2 = this.messagesPaginator.get(true).then(()=>{
-                this.cvnService.read( this.conversation.id );
+    loadVirtualConversation(){
+        this.loadUsers().then(()=>{
+            this.loading = false;
+            this.cd.markForCheck();
+        });
+    }
 
-            });
-            // Get conversation users read dates
-            let p3 = this.cURD.get([this.conversation.id],true); 
-            // Wait for informations => Loaded!
-            p1.then(()=>p2.then(()=> p3.then(() => {
-                Array.prototype.unshift.apply(this.indexes , this.messagesPaginator.indexes.slice().reverse() );
-                this._buildReadDates( this.messagesPaginator.list );
-                if( this.loading ){
-                    this.loading = false;                
-                    this.cd.markForCheck();
-                }
-            })));
+    load( creating?:boolean ){            
+        // Set messages paginator & get last messages...
+        this.messagesPaginator = this.msgPaginatorProvider.getPaginator(this.conversation.id);
+        // Listen to paginator self updates ( When a message is sent the paginator refresh its own list ).
+        this.events.on('cvn'+this.conversation.id+'.messages.update',this.onRefresh);
+        // Listen to websocket
+        this.ws.get().then( socket => {
+            this.socket = socket;
+            this._addSocketListener('ch.message', this._onWSMessage.bind(this) );
+            this._addSocketListener('ch.writing', this._onWSWriting.bind(this) );
+            this._addSocketListener('ch.read', this._onWSRead.bind(this) );
+        });
+        // Get users informations...
+        let p1 = this.loadUsers();
+        // Get messages...
+        let p2 = this.messagesPaginator.get(true).then(()=>{
+            this.cvnService.read( this.conversation.id );
+        });
+
+        let p3;
+        if( creating ){
+            let deferred = _getDeferred();
+            p3 = deferred.promise;
+            deferred.resolve();
         }else{
-            this.loadUsers().then(()=>{
-                this.loading = false;
-                this.cd.markForCheck();
-            });
+            // Get conversation users read dates
+            p3 = this.cURD.get([this.conversation.id],true);
         }
+        // Wait for informations => Loaded!
+        p1.then(()=>p2.then(()=> p3.then(() => {
+            Array.prototype.unshift.apply(this.indexes , this.messagesPaginator.indexes.slice().reverse() );
+            if( creating ){
+                this._buildReadDates( this.messagesPaginator.list );
+            }else{
+                this._createEmptyReadDates();
+            }
+            if( this.loading ){
+                this.loading = false;                
+                this.cd.markForCheck();
+            }
+        })));
     }
 
     loadUsers(): Promise<any>{
@@ -192,6 +205,12 @@ export class ConversationPage {
         }
     }
 
+    _createEmptyReadDates(){
+        this.users.forEach( user_id =>{
+            this.usersLastUnreadId[user_id] = false;
+        });
+    }
+
     _onMessageLoaded(){
         if( this.loadBehaviour === 'godown' ){
             this.content.scrollTo( 0, this.content.getContentDimensions().scrollHeight, 0 );
@@ -204,6 +223,14 @@ export class ConversationPage {
     }
 
     _onWSMessage( data ){
+        if( this.writer ){
+            if( this.writingTimeout ){
+                clearTimeout( this.writingTimeout );
+                this.writer = undefined;
+                this.writingTimeout = undefined;
+            }
+        }
+
         let promise = this.refresh();
         if( promise ){
             promise.then(()=>{
@@ -214,35 +241,49 @@ export class ConversationPage {
 
     _onWSWriting( data ){
         if( data.id === this.conversation.id && data.user_id
+            && this.users.indexOf( data.user_id ) !== -1
             && this.userModel.list[data.user_id] && this.userModel.list[data.user_id].datum ){
 
+            this.loadBehaviour = 'untouch';
             this.writer = this.userModel.list[data.user_id];
             this.cd.markForCheck();
 
-            setTimeout( ()=>{
+            if( this.writingTimeout ){
+                clearTimeout( this.writingTimeout );
+            }
+
+            this.writingTimeout = setTimeout( ()=>{
                 this.writer = undefined;
                 this.cd.markForCheck();
-            }, 1200 );
+                this.writingTimeout = undefined;
+            }, 5000 );
         }
     }
 
     _onWSRead( data ){
         if( data.id === this.conversation.id ){
-            this.refreshingPromise.then( () => {
-                this.messagesPaginator.list.some( message => {
-                    if( this.account.session.id === message.user_id ){
-                        if( message.id <= data.message_id ){
-                            this.usersLastUnreadId[data.user_id] = message.id;
-                            return true;
-                        }
-                    }
-                    return false;
+            if( this.refreshingPromise ){
+                this.refreshingPromise.then( () => {
+                    this._processRead( data );
                 });
-
-                this.usersLastUnreadId = Object.assign({},this.usersLastUnreadId);
-                this.cd.markForCheck();
-            });
+            }else{
+                this._processRead( data );
+            }
         }
+    }
+
+    _processRead( data ){
+        this.messagesPaginator.list.some( message => {
+            if( this.account.session.id === message.user_id ){
+                if( message.id <= data.message_id && this.users.indexOf( data.user_id ) !== -1 ){
+                    this.usersLastUnreadId[data.user_id] = message.id;
+                    return true;
+                }
+            }
+            return false;
+        });
+        this.usersLastUnreadId = Object.assign({},this.usersLastUnreadId);
+        this.cd.markForCheck();
     }
 
     refresh(){
@@ -276,7 +317,8 @@ export class ConversationPage {
         }
     }
 
-    send(){
+    send( textarea ){
+        textarea.focus();
         if( this.text.trim() ){
             let text = this.text.trim();
             this.text = '';

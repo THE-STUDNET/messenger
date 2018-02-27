@@ -30,9 +30,6 @@ export class HomePage {
             if( conversationsPaginator.list.length ){
                 this.loading = false;
             }
-            conversationsPaginator.get(true).then(()=>{
-                this.loading = false;
-            });
 
             this.onMessage = this._onMessage.bind(this);
             this.ws.get().then(socket => {
@@ -66,8 +63,27 @@ export class HomePage {
     }
 
     _onMessage( data ){
-        this.conversationsPaginator.get(true).then(()=>{
-            this.sounds.play('newmessage');  
+        let idx = this.conversationsPaginator.indexes.indexOf( data.conversation_id );
+        if( idx === -1 || this.conversationsPaginator.list[idx].message.id !== data.id ){
+            this.conversationsPaginator.get(true).then( list =>{
+                this._notifyConversations( list );
+                this.sounds.play('newmessage');  
+            });
+        }
+    }
+
+    _notifyConversations( list ){
+        if( list ){
+            list.forEach( conversation => {
+                this.events.process('conversation.'+conversation.id+'.updated');
+            });
+        }
+    }
+
+    ionViewWillEnter(){
+        this.conversationsPaginator.get(true).then( list =>{
+            this._notifyConversations( list );
+            this.loading = false;
         });
     }
 

@@ -22,7 +22,7 @@ export class ConversationComponent {
     item: any;
     page: any;
     conversation: any;
-    onUpdatedListener: any;
+    updateListenerId: any;
     public socketListeners: any = {};
     public socket: any;
 
@@ -40,7 +40,15 @@ export class ConversationComponent {
         this.load();
     }
 
-    load(){     
+    load(){
+        if( this.updateListenerId ){
+            this.events.off( undefined, this.updateListenerId );
+        }
+
+        this.updateListenerId = this.events.on('conversation.'+this.id+'.updated',()=>{
+            this.cvnModel.get([this.id], true);
+        });
+
         let p1 = this.lastUnreadIdModel.queue([this.id], true);
         let p2 = this.cvnModel.queue([this.id], true);
         
@@ -54,26 +62,30 @@ export class ConversationComponent {
                     this.other_users.push(id);
                 }
             });
-            this.readAvatarUsers.splice(0, this.readAvatarUsers.length );
-            this.readCountUsers = 0;
-            if( this.conversation.datum.message.user_id === this.account.session.id ){
-                let luiModel = this.lastUnreadIdModel.list[this.id].datum;
-
-                Object.keys(luiModel).forEach( user_id => {
-                    if( luiModel[user_id] === null || luiModel[user_id] > this.conversation.datum.message.id ){
-                        this.readAvatarUsers.push( parseInt(user_id) );                        
-                    }
-                });
-
-                if( this.readAvatarUsers.length > 2 ){
-                    this.readCountUsers = this.readAvatarUsers.splice(1,this.readAvatarUsers.length-1).length;
-                }
-            }
+            this.buildUnread();
             // Get users data.
             this.userModel.queue(this.other_users).then(()=>{
                 this.loading = false;
             });
         }));
+    }
+
+    buildUnread(){
+        this.readAvatarUsers.splice(0, this.readAvatarUsers.length );
+        this.readCountUsers = 0;
+        if( this.conversation.datum.message.user_id === this.account.session.id ){
+            let luiModel = this.lastUnreadIdModel.list[this.id].datum;
+
+            Object.keys(luiModel).forEach( user_id => {
+                if( luiModel[user_id] === null || luiModel[user_id] > this.conversation.datum.message.id ){
+                    this.readAvatarUsers.push( parseInt(user_id) );                        
+                }
+            });
+
+            if( this.readAvatarUsers.length > 2 ){
+                this.readCountUsers = this.readAvatarUsers.splice(1,this.readAvatarUsers.length-1).length;
+            }
+        }
     }
 
     printName(): string{
@@ -113,7 +125,10 @@ export class ConversationComponent {
     }
 
     onRead( data ){
-        if( this.conversation && data.id === this.id && this.conversation.datum.message.user_id == this.account.session.id ){
+        if( this.conversation && data.id === this.id 
+            && this.other_users.indexOf( data.user_id ) !== -1
+            && this.readAvatarUsers.indexOf( data.user_id ) === -1
+            && this.conversation.datum.message.user_id == this.account.session.id ){
             if( this.conversation.datum.message.id <= data.message_id ){
                 if( !this.readAvatarUsers.length || (this.readAvatarUsers.length<2 && !this.readCountUsers) ){
                     this.readAvatarUsers.push(data.user_id);
@@ -142,5 +157,6 @@ export class ConversationComponent {
 
     ngOnDestroy(){
         this._clearSocketListeners();
+        this.events.off( undefined, this.updateListenerId );
     }
 }
