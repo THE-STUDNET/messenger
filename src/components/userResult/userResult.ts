@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { NavController } from 'ionic-angular';
-import { Account, UserModel, PageModel } from '../../providers/api/api.module';
+import { UserModel, PageModel } from '../../providers/api/api.module';
 import { PipesProvider } from '../../pipes/pipes.provider';
 
 @Component({
@@ -16,7 +16,7 @@ export class UserResultComponent {
     public user: any;
     public page: any;
 
-    constructor( public navCtrl: NavController, private account:Account, private userModel:UserModel,
+    constructor( public navCtrl: NavController, private userModel:UserModel,
         public pageModel: PageModel, public pipesProvider:PipesProvider ) {}
 
     ngOnChanges(){

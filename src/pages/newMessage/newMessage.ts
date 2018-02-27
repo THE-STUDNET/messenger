@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { NavController, ToastController } from 'ionic-angular';
-import { Account, Api, ConversationModel } from '../../providers/api/api.module';
+import { Account, Api } from '../../providers/api/api.module';
 import { ConversationPage } from '../conversation/conversation';
 import { _getDeferred } from '../../functions/getDeferred';
 

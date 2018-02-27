@@ -1,4 +1,4 @@
-import { Component, Input, SimpleChange } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { NavController } from 'ionic-angular';
 import { Account, UserModel, ConversationModel, ConversationUnreadDateModel } from '../../providers/api/api.module';
 import { PipesProvider } from '../../pipes/pipes.provider';
