@@ -47,6 +47,13 @@ conversation{
         background: $text-color;
     }
 
+    .sent-dot{
+        font-size: 1.6rem;
+        position: relative;
+        top: .2rem;
+        color: map-get($colors, primary);
+    }
+
     .last{
         flex-grow: 1;
         overflow: hidden;

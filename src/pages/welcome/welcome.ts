@@ -13,7 +13,19 @@ export class WelcomePage {
     constructor(public navCtrl: NavController, public toastCtrl: ToastController, public account: Account ) {}
 
     LoginWithLinkedIn(){
-        this.account.linkedinLogin();
+        this.account.linkedinLogin().then( () => {},function( err ){
+            if( err && err.errorCode ){
+                this.toastCtrl.create({
+                    message: 'Sorry an error occured!',
+                    duration: 3000
+                }).present();
+            }else{
+                this.toastCtrl.create({
+                    message: 'Sorry, your Linkedin account is not connected to Twic yet',
+                    duration: 3000
+                }).present();
+            }        
+        }.bind(this));
     }
 
     navToClassicSignIn(){

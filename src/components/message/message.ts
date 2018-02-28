@@ -43,6 +43,8 @@ export class MessageComponent {
                 let previousMessageDate = new Date( this.paginator.list[idx+1].created_date ).getDate(),
                     messageDate = new Date(this.message.created_date).getDate();
                 return messageDate !== previousMessageDate;
+            }else if( idx === this.paginator.indexes.length-1 ){
+                return true;
             }
         }
     }

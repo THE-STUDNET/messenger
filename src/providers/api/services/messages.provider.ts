@@ -69,6 +69,14 @@ export class MessagesPaginator extends AbstractPaginator {
         // Return.
         return message;
     }
+
+    resend( message ){
+        let idx = this.sendings.indexOf(message);
+        if( idx !== -1 ){
+            this.sendings.splice( idx, 1 );
+            this.send( message.text, message.library );
+        }
+    }
 }
 
 @Injectable()

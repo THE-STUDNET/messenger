@@ -46,14 +46,14 @@ export class Account {
             .then( data => { this._login(data); } );
     }
 
-    linkedinLogin(){
-        this.linkedIn.login(['r_basicprofile'], true).then( () => {
-            this.linkedIn.getRequest('people/~')
+    linkedinLogin(): Promise<any>{
+        return this.linkedIn.login(['r_basicprofile'], true).then( () => {
+            return this.linkedIn.getRequest('people/~')
                 .then( res =>
-                    this.api.send('user.linkedinLogIn', { linkedin_id:res.id})
+                    this.api.send('user.linkedinLogIn',{linkedin_id:res.id})
                         .then( data => this._login(data) ) );
-        }, function(){
-            console.log('LinkedinLOGIN ERR', arguments);
+        }, function( err ){
+            throw err;
         });
     }
 

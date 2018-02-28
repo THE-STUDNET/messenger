@@ -1,5 +1,5 @@
 <div class="writing message-container">
-    <div class="author">
+    <div class="author" *ngIf="_isPreviousDifferentAuthor()">
         <div class="avatar" 
             [userStatus]="[writer.datum.id]"
             [backgroundImg]="writer.datum.avatar | dmsUrl">

@@ -26,7 +26,7 @@ export class MyApp {
             try{
                 if( platform.is('cordova') ){
                     statusBar.backgroundColorByHexString('#999999');
-                    splashScreen.hide();
+                    //splashScreen.hide();
                 }
             }catch( e ){
                 console.log('Error', e);

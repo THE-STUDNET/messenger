@@ -244,7 +244,13 @@ export class ConversationPage {
             && this.users.indexOf( data.user_id ) !== -1
             && this.userModel.list[data.user_id] && this.userModel.list[data.user_id].datum ){
 
-            this.loadBehaviour = 'untouch';
+            let dim = this.content.getContentDimensions();
+            if( dim.scrollHeight - dim.scrollTop - dim.contentHeight < 15 ){
+                this.loadBehaviour = 'godown';
+            }else if( this.loadBehaviour !== 'stay' ){
+                this.loadBehaviour = 'untouch';
+            }
+            
             this.writer = this.userModel.list[data.user_id];
             this.cd.markForCheck();
 
@@ -390,6 +396,13 @@ export class ConversationPage {
 
     trackMessageId(index, id){
         return id;
+    }
+
+    messageTapped( message ){
+        if( message.sendingFailed ){
+            this.loadBehaviour = 'godown';
+            this.messagesPaginator.resend( message );
+        }
     }
 
     back(){

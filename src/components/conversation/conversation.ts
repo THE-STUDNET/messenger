@@ -107,7 +107,8 @@ export class ConversationComponent {
             if( this.conversation.datum.message.user_id == this.account.session.id ){
                 return 'You: ';
             }else if( this.other_users.length > 1 ){
-                return this.pipesProvider.username( this.userModel.list[this.conversation.datum.message.user_id].datum, true )+': ';
+                let user = this.userModel.list[this.conversation.datum.message.user_id].datum;
+                return (user.firstname[0]+user.lastname[0]).toUpperCase()+': ';
             }
         }
         return '';

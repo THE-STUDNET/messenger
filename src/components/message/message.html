@@ -15,7 +15,7 @@
         <div class="name">{{ user.datum | username:true:true }}</div>
     </div>
     <div class="message-text" [class.notrounded]="_hasNotRoundedBorder()" (tap)="messageTap()">
-        <span>{{ message.text }}</span>
+        <span class="text">{{ message.text }}</span>
         <span class="hour">{{ message.created_date | date:'shortTime' }}</span>
 
         <div class="sending-animation" *ngIf="message.promise && !message.sendingFailed">

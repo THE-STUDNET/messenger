@@ -173,6 +173,10 @@ button.swiper-pagination-bullet{
         .icon-btn{
             height: 100%;
         }
+
+        .title{
+            padding: 0 .5rem;
+        }
     }
 
     .search{
@@ -366,7 +370,7 @@ button.swiper-pagination-bullet{
 
 .background-loading{
     //opacity:.7;
-    animation: 1s loadingBackground infinite;
+    //animation: 1s loadingBackground infinite;
 }
 .background-loaded{
     color:transparent;
