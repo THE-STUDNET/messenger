@@ -30,8 +30,8 @@ plugins/ios.json
 www/
 $RECYCLE.BIN/
 
-.google-services.json
-.GoogleService-Info.plist
+google-services.json
+GoogleService-Info.plist
 .DS_Store
 Thumbs.db
 UserInterfaceState.xcuserstate
@@ -40,6 +40,6 @@ configs/*
 !configs/localhost/*
 
 src/const/configuration.ts
-
 build.json
 twicm.keystore
+package-lock.json
