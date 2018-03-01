@@ -9,7 +9,7 @@
             <div class="subtitle">{{ printSubtitle() }}</div>
             <div class="avatars" *ngIf="!loadingUsers">
                 <div *ngFor="let user_id of users" class="avatar" 
-                    [backgroundImg]="userModel.list[user_id].datum.avatar | dmsUrl">
+                    [backgroundImg]="userModel.list[user_id].datum.avatar | dmsUrl: [50,'x',50]">
                     {{ userModel.list[user_id].datum | userletter }}
                 </div>
             </div>

@@ -38,10 +38,9 @@ export class HomePage {
                 this.socket.on('ch.message', this.onMessage );
             });
 
-            this.eventListeners.push( this.events.on('notification::message', event=>{ 
-                console.log( event );
+            this.eventListeners.push( this.events.on('notification::message', event=>{
                 let data = event.data[1];
-                this._onMessage({conversation_id:data.conversation,id:0});
+                this._onMessage({conversation_id:data.conversation,id:data.message});
             }) );
         }
 

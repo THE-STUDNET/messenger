@@ -58,11 +58,16 @@ export class PipesProvider {
         return initials;
     }
 
-    dmsUrl( token: string): string {
+    dmsUrl( token: string, size?:any[] ): string {
         if( token ){
+            var resize = '';
+            if( size && size.length ){
+                resize = '-'+ ( window.devicePixelRatio * size[0] )
+                    + (size[1]||'') +( size[2]? window.devicePixelRatio * size[2]:'' );
+            }
             return (token.indexOf('assets/')!==-1||token.indexOf('blob:')!==-1||token.indexOf('http')!==-1)?
                 token:(this.config.dms.protocol?this.config.dms.protocol+':':'')
-                +this.config.dms.base_url+this.config.dms.paths.datas+'/'+token;
+                +this.config.dms.base_url+this.config.dms.paths.datas+'/'+token+resize;
         }
     }
 

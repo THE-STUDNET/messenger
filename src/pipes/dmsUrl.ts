@@ -8,7 +8,7 @@ export class DmsUrlPipe implements PipeTransform {
 
     constructor( public provider:PipesProvider ){}
 
-    transform( token: string): string {
-        return this.provider.dmsUrl( token );
+    transform( token: string, size?: any[]): string {
+        return this.provider.dmsUrl( token, size );
     }
 }

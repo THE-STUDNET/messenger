@@ -110,12 +110,11 @@ export class ConversationPage {
         // Listen to paginator self updates ( When a message is sent the paginator refresh its own list ).
         this.eventListeners.push( this.events.on('cvn'+this.conversation.id+'.messages.update',this._onRefresh.bind(this)) );
         // Listen to notification
-        this.eventListeners.push( this.events.on('notification::message', ( event )=>{ 
-            console.log( event );
+        this.eventListeners.push( this.events.on('notification::message', ( event )=>{
             let wasTapped = event.data[0],
                 data = event.data[1];
             if( !wasTapped ){
-                this._onMessage( data.conversation, 0 );
+                this._onMessage( data.conversation, data.message );
             }
         }) );
 

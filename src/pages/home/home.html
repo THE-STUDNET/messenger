@@ -3,7 +3,7 @@
         <div class="top">
             <div class="avatar-container" (tap)="goToProfile()">
                 <div *ngIf="user" class="head-avatar" 
-                    [backgroundImg]="user.datum.avatar | dmsUrl">{{ user.datum | userletter }}</div>
+                    [backgroundImg]="user.datum.avatar | dmsUrl:[50,'x',50]">{{ user.datum | userletter }}</div>
             </div>
             <img class="logo" src="assets/images/logo.svg">
     

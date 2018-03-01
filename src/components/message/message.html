@@ -9,7 +9,7 @@
     [class.sending]="message.promise" [class.error]="message.sendingFailed">
     <div class="author" *ngIf="showAuthor()">
         <div *ngIf="user.datum.id!==account.session.id" class="avatar" 
-            [backgroundImg]="user.datum.avatar | dmsUrl">
+            [backgroundImg]="user.datum.avatar | dmsUrl: [50,'x',50]">
             {{ user.datum | userletter }}
         </div>
         <div class="name">{{ user.datum | username:true:true }}</div>
