@@ -1,9 +1,9 @@
-import { Component, Inject } from '@angular/core';
-import { Platform } from 'ionic-angular';
+import { Component, Inject, ViewChild } from '@angular/core';
+import { Platform, NavController } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 
-import { Api, Account, NotificationService } from '../providers/api/api.module';
+import { Api, Account, NotificationService, ConversationModel } from '../providers/api/api.module';
 import { Events } from '../providers/events/events.provider';
 import { Hangout } from '../providers/hangout/hangout.provider';
 import { WebSocket } from '../providers/shared/shared.module';
@@ -11,16 +11,18 @@ import { WebSocket } from '../providers/shared/shared.module';
 // import pages
 import { WelcomePage } from '../pages/welcome/welcome';
 import { HomePage } from '../pages/home/home';
+import { ConversationPage } from '../pages/conversation/conversation';
 
 @Component({
   templateUrl: 'app.html'
 })
 export class MyApp {
+    @ViewChild('navCtrl') navCtrl: NavController
     rootPage:any;
 
     constructor(platform: Platform, public statusBar: StatusBar, splashScreen: SplashScreen, private account: Account,
         api: Api, private notifications: NotificationService, events: Events, hangout: Hangout, 
-        private websocket: WebSocket, @Inject('Configuration') private config ) {
+        private websocket: WebSocket, @Inject('Configuration') private config, cvnModel: ConversationModel ) {
         // When platform is ready, configure plugins & set root page.
         platform.ready().then(() => {
             try{
@@ -65,6 +67,14 @@ export class MyApp {
                 }
             }
         });
+
+        events.on('notification::message', event=>{
+            let wasTapped = event.data[0], id = event.data[1].conversation;
+            if( wasTapped ){
+                cvnModel.get([id]).then(
+                    ()=>this.navCtrl.push(ConversationPage,{ conversation: cvnModel.list[id].datum }) ).catch();
+            }
+        }) 
     }
 
     onLogin(){

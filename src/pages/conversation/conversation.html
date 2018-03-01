@@ -70,7 +70,7 @@
         
         <div class="dta">
             <textarea #senderArea placeholder="Say something..." type="text" (input)="onTyping()"
-                [(ngModel)]="text" (keyup.enter)="send(senderArea)" name="text"></textarea>
+                [(ngModel)]="text" (keydown.enter)="send(senderArea, $event )" name="text"></textarea>
             <div class="dta-copy">{{ text }}</div>
         </div>
         <button class="icon-btn i i-send send" [class.active]="text" (click)="send(senderArea);"></button>

@@ -38,12 +38,12 @@ export class ConversationPage {
     public indexes: any[] = [];
 
     public onKeyboardShow: Subscription;
-    public onRefresh: any;
     public refreshingPromise: Promise<any>;
     public onMessageLoaded:any;
     public writingTimeout: any;
 
     public socketListeners: any = {};
+    public eventListeners: any = [];
 
     public loadBehaviour: string = 'godown';
     public prevScrollHeight: number;
@@ -56,7 +56,6 @@ export class ConversationPage {
 
         this.conversation = params.get('conversation');
         this.onMessageLoaded = this._onMessageLoaded.bind(this);
-        this.onRefresh = this._onRefresh.bind(this);
 
         // Bind scroll on keyboard open...
         this.onKeyboardShow = this.keyboard.onKeyboardShow().subscribe( ()=>{
@@ -109,7 +108,17 @@ export class ConversationPage {
         // Set messages paginator & get last messages...
         this.messagesPaginator = this.msgPaginatorProvider.getPaginator(this.conversation.id);
         // Listen to paginator self updates ( When a message is sent the paginator refresh its own list ).
-        this.events.on('cvn'+this.conversation.id+'.messages.update',this.onRefresh);
+        this.eventListeners.push( this.events.on('cvn'+this.conversation.id+'.messages.update',this._onRefresh.bind(this)) );
+        // Listen to notification
+        this.eventListeners.push( this.events.on('notification::message', ( event )=>{ 
+            console.log( event );
+            let wasTapped = event.data[0],
+                data = event.data[1];
+            if( !wasTapped ){
+                this._onMessage( data.conversation, 0 );
+            }
+        }) );
+
         // Listen to websocket
         this.ws.get().then( socket => {
             this.socket = socket;
@@ -134,9 +143,6 @@ export class ConversationPage {
             p3 = this.cURD.get([this.conversation.id],true);
         }
         // Wait for informations => Loaded! 
-        /*p1.then( () => { console.log('?!1'); });
-        //p2.then( () => { console.log('?!2'); }); () => { console.log('WTF!3'); }
-        p3.then( () => { console.log('?!3'); },);*/
         p1.then(()=>p2.then(()=> p3.then(() => {
             Array.prototype.unshift.apply(this.indexes , this.messagesPaginator.indexes.slice().reverse() );
             if( creating ){
@@ -187,8 +193,6 @@ export class ConversationPage {
     }
 
     _buildReadDates( messageList ){
-        console.log( Object.keys(this.usersLastUnreadId).length !== this.users.length, Object.keys(this.usersLastUnreadId).length , this.users.length );
-
         if( Object.keys(this.usersLastUnreadId).length !== this.users.length ){
             let usersLastUnreadId = this.cURD.list[this.conversation.id].datum;
 
@@ -207,8 +211,6 @@ export class ConversationPage {
                 }
                 return false;
             });
-
-            console.log('Unreads', this.usersLastUnreadId );
         }
     }
 
@@ -230,19 +232,25 @@ export class ConversationPage {
     }
 
     _onWSMessage( data ){
-        if( this.writer ){
-            if( this.writingTimeout ){
-                clearTimeout( this.writingTimeout );
-                this.writer = undefined;
-                this.writingTimeout = undefined;
-            }
-        }
+        this._onMessage( data.conversation_id, data.id );
+    }
 
-        let promise = this.refresh();
-        if( promise ){
-            promise.then(()=>{
-                this.sounds.play('newmessage');
-            });
+    _onMessage( conversation_id, message_id ){
+        if( this.conversation.id === conversation_id && this.indexes.indexOf(message_id) === -1 ){
+            if( this.writer ){
+                if( this.writingTimeout ){
+                    clearTimeout( this.writingTimeout );
+                    this.writer = undefined;
+                    this.writingTimeout = undefined;
+                }
+            }
+    
+            let promise = this.refresh();
+            if( promise ){
+                promise.then(()=>{
+                    this.sounds.play('newmessage');
+                });
+            }
         }
     }
 
@@ -330,8 +338,11 @@ export class ConversationPage {
         }
     }
 
-    send( textarea ){
+    send( textarea, $event ){
         textarea.focus();
+        if( $event ){
+            $event.preventDefault();
+        }        
         if( this.text.trim() ){
             let text = this.text.trim();
             this.text = '';
@@ -419,10 +430,7 @@ export class ConversationPage {
     ngOnDestroy(){
         this.onKeyboardShow.unsubscribe();
         this._clearSocketListeners();
-
-        if( this.conversation && this.conversation.id ){
-            this.events.off('cvn'+this.conversation.id+'.messages.update',this.onRefresh);
-        }
+        this.eventListeners.forEach( listenerId => this.events.off(undefined,listenerId) );
     }
 
     _addSocketListener( event: string, fn: Function ){

@@ -53,6 +53,10 @@ button.swiper-pagination-bullet{
     display: none;
 }
 
+.footer-md::before{
+    display: none;
+}
+
 // IOS
 .button-ios {
     border-radius: 2px;
@@ -151,9 +155,14 @@ button.swiper-pagination-bullet{
     padding-top:1.5rem;
 }
 
+ion-footer{
+    box-shadow: 0 -1px 1px rgba(99,99,99,.28);
+}
+
 .appheader{
     background: map-get($colors, primary);
     color: #FFF;
+    box-shadow: 0 1px 1px rgba(99,99,99,.28);
 
     .top{
         padding: 0 .5rem;

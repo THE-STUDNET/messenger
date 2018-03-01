@@ -18,6 +18,7 @@ export class HomePage {
     public loading:boolean = true;
     public socket: any;
     public onMessage: any;
+    public eventListeners: any[] = [];
 
     constructor( public navCtrl: NavController, public account: Account, public userModel: UserModel, 
         public conversationsPaginator: ConversationsPaginator, public conversationModel: ConversationModel,
@@ -36,6 +37,12 @@ export class HomePage {
                 this.socket = socket;
                 this.socket.on('ch.message', this.onMessage );
             });
+
+            this.eventListeners.push( this.events.on('notification::message', event=>{ 
+                console.log( event );
+                let data = event.data[1];
+                this._onMessage({conversation_id:data.conversation,id:0});
+            }) );
         }
 
     refresh( refresher ){
@@ -91,5 +98,6 @@ export class HomePage {
         if( this.socket ){
             this.socket.off('ch.message', this.onMessage );
         }
+        this.eventListeners.forEach( listenerId => this.events.off(undefined,listenerId) );
     }
 }
