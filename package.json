@@ -5,7 +5,8 @@
   "homepage": "https://twicbythestudnet.com/",
   "private": true,
   "config": {
-    "env": "dev"
+    "env": "dev",
+    "name": "Twic Messenger"
   },
   "scripts": {
     "android-apk": "ionic cordova build android --release --buildConfig build.json",
@@ -15,7 +16,7 @@
     "ionic:build": "ionic-app-scripts build",
     "ionic:serve": "ionic-app-scripts serve",
     "ionic:build:before": "npm run twic:config",
-    "twic:config": "cp ./configs/$npm_package_config_env/configuration.ts src/const/configuration.ts && cp -rf ./configs/$npm_package_config_env/files/* ./ && if [ -d \"./platforms/ios\" ]; then cp ./configs/$npm_package_config_env/files/GoogleService-Info.plist ./platforms/ios/TWIC/ ; fi"
+    "twic:config": "cp ./configs/$npm_package_config_env/configuration.ts src/const/configuration.ts && cp -rf ./configs/$npm_package_config_env/files/* ./ && if [ -d \"./platforms/ios\" ]; then cp ./configs/$npm_package_config_env/files/GoogleService-Info.plist \"./platforms/ios/$npm_package_config_name/\" ; fi"
   },
   "dependencies": {
     "@angular/common": "5.0.3",
