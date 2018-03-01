@@ -26,7 +26,7 @@ export class MyApp {
             try{
                 if( platform.is('cordova') ){
                     statusBar.backgroundColorByHexString('#999999');
-                    //splashScreen.hide();
+                    splashScreen.hide();
                 }
             }catch( e ){
                 console.log('Error', e);
@@ -39,6 +39,7 @@ export class MyApp {
                 this.rootPage = WelcomePage;
             }
         });
+
         // When user log in => Redirect him on LiveClasses page.
         events.on('account::login',() => {
             this.onLogin();

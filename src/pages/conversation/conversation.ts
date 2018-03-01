@@ -123,7 +123,7 @@ export class ConversationPage {
         let p2 = this.messagesPaginator.get(true).then(()=>{
             this.cvnService.read( this.conversation.id );
         });
-
+        
         let p3;
         if( creating ){
             let deferred = _getDeferred();
@@ -133,19 +133,22 @@ export class ConversationPage {
             // Get conversation users read dates
             p3 = this.cURD.get([this.conversation.id],true);
         }
-        // Wait for informations => Loaded!
+        // Wait for informations => Loaded! 
+        /*p1.then( () => { console.log('?!1'); });
+        //p2.then( () => { console.log('?!2'); }); () => { console.log('WTF!3'); }
+        p3.then( () => { console.log('?!3'); },);*/
         p1.then(()=>p2.then(()=> p3.then(() => {
             Array.prototype.unshift.apply(this.indexes , this.messagesPaginator.indexes.slice().reverse() );
             if( creating ){
-                this._buildReadDates( this.messagesPaginator.list );
-            }else{
                 this._createEmptyReadDates();
+            }else{
+                this._buildReadDates( this.messagesPaginator.list );
             }
             if( this.loading ){
                 this.loading = false;                
                 this.cd.markForCheck();
             }
-        })));
+        }))).catch(()=>{ console.log('catch'); });
     }
 
     loadUsers(): Promise<any>{
@@ -155,7 +158,7 @@ export class ConversationPage {
                 return this.pageModel.get([this.userModel.list[this.users[0]].datum.organization_id]).then(()=>{
                     this.loadingUsers = false;
                     this.cd.markForCheck();
-                });
+                },()=>{ console.log('Pages loading err'); });
             }else{
                 this.loadingUsers = false;
                 this.cd.markForCheck();
@@ -184,6 +187,8 @@ export class ConversationPage {
     }
 
     _buildReadDates( messageList ){
+        console.log( Object.keys(this.usersLastUnreadId).length !== this.users.length, Object.keys(this.usersLastUnreadId).length , this.users.length );
+
         if( Object.keys(this.usersLastUnreadId).length !== this.users.length ){
             let usersLastUnreadId = this.cURD.list[this.conversation.id].datum;
 
@@ -202,6 +207,8 @@ export class ConversationPage {
                 }
                 return false;
             });
+
+            console.log('Unreads', this.usersLastUnreadId );
         }
     }
 

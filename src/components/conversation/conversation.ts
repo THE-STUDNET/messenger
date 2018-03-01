@@ -66,8 +66,15 @@ export class ConversationComponent {
             // Get users data.
             this.userModel.queue(this.other_users).then(()=>{
                 this.loading = false;
-            });
+            },()=>{ console.log('ERROR USERS LOADING'); });
         }));
+
+        p1.catch(()=>{
+            console.log('ERR P1');
+        });
+        p2.catch(()=>{
+            console.log('ERR P2');
+        })
     }
 
     buildUnread(){

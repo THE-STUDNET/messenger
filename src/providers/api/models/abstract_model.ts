@@ -238,10 +238,13 @@ export abstract class AbstractModel {
             }, function(){
                 //this._req_aborters.splice( this._req_aborters.indexOf(a) );
                 console.log('ERROR => REJECTING', arguments );
+                
 
                 ids.forEach(function( k ){
                     this._deleteModel( k );
                 }.bind(this));
+
+                console.log( 'HERE?', methodDeferred );
 
                 methodDeferred.reject( arguments );
             }.bind(this)).catch( function(){ console.log('>TF?!', arguments); } )  ;
