@@ -21,7 +21,7 @@ export class MyApp {
     rootPage:any;
 
     constructor(platform: Platform, public statusBar: StatusBar, splashScreen: SplashScreen, private account: Account,
-        api: Api, private notifications: NotificationService, events: Events, hangout: Hangout, 
+        api: Api, private notifications: NotificationService, events: Events, hangout: Hangout,
         private websocket: WebSocket, @Inject('Configuration') private config, cvnModel: ConversationModel ) {
         // When platform is ready, configure plugins & set root page.
         platform.ready().then(() => {
@@ -74,7 +74,7 @@ export class MyApp {
                 cvnModel.get([id]).then(
                     ()=>this.navCtrl.push(ConversationPage,{ conversation: cvnModel.list[id].datum }) ).catch();
             }
-        }) 
+        });        
     }
 
     onLogin(){

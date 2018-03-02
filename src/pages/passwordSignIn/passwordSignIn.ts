@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
-import { NavController, NavParams, ToastController, ModalController } from 'ionic-angular';
+import { NavController, NavParams, ToastController } from 'ionic-angular';
 import { Account } from '../../providers/api/services/account.provider';
 import { ForgotPasswordPage } from '../forgotPassword/forgotPassword';
+import { ModalService } from '../../providers/shared/shared.module';
 
 @Component({
   selector: 'page-password-signin',
@@ -13,7 +14,7 @@ export class PasswordSignInPage {
     public infos: any;
 
     constructor(public navCtrl: NavController, public toastCtrl: ToastController, public account: Account, 
-        public modalCtrl: ModalController, public navParams: NavParams ) {
+        public navParams: NavParams, public modal: ModalService ) {
         this.infos = navParams.get('user_infos');
     }
 
@@ -40,10 +41,7 @@ export class PasswordSignInPage {
     }
 
     forgotPassword(){
-        this.modalCtrl.create( 
-            ForgotPasswordPage,
-            { email: this.infos.email },
-            { cssClass: 'alert-modal'}).present();
+        this.modal.show( ForgotPasswordPage, {email: this.infos.email} );
     }
 
     back(){

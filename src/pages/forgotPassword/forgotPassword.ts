@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
-import { NavController, ToastController, NavParams } from 'ionic-angular';
+import { Component, Input } from '@angular/core';
+import { NavController, ToastController } from 'ionic-angular';
 import { Account } from '../../providers/api/services/account.provider';
+import { ModalService } from '../../providers/shared/shared.module';
 
 @Component({
   selector: 'page-forgot-password',
@@ -8,17 +9,14 @@ import { Account } from '../../providers/api/services/account.provider';
 })
 export class ForgotPasswordPage {
 
-    public email: string;
+    @Input() data: any;
 
-    constructor(public navCtrl: NavController, public toastCtrl: ToastController, 
-        public account: Account, public navParams: NavParams ) {
-        this.email = navParams.get('email');
-    }
+    constructor(public modal: ModalService, public toastCtrl: ToastController, public account: Account ) {}
 
     resendPassword(){
-        this.account.resendAccountLink( this.email ).then( () => {
+        this.account.resendAccountLink( this.data.email ).then( () => {
             this.toastCtrl.create({
-                message: 'Invitation sent!',
+                message: 'Mail sent!',
                 duration: 3000
             }).present();
         }, () => {
@@ -26,11 +24,10 @@ export class ForgotPasswordPage {
                 message: 'Sorry an error occured!',
                 duration: 3000
             }).present();
-        });
+        }).then(()=>this.modal.hide());
     }
 
-    back(){
-        this.navCtrl.pop();
+    cancel(){
+        this.modal.hide();
     }
-
 }

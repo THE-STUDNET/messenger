@@ -1,0 +1,28 @@
+#modal{
+    left: 0;
+    top: 0;
+    position: absolute;
+    z-index: 0;
+    opacity: 0;
+    display: flex;
+    width: 100%;
+    height: 100%;
+    contain: strict;
+    background: rgba( #0F3B3A, .8 );
+    transition-property: opacity, z-index;
+    transition-delay: 0s, .3s;
+    transition-duration: .3s;
+
+    & > *{
+        background: #FFF;
+        display: block;
+        margin: auto 3rem;
+        border-radius: .4rem;
+    }
+}
+
+#modal.displayed{
+    z-index: 1;
+    opacity: 1;
+    transition-delay: 0s, 0s;
+}
