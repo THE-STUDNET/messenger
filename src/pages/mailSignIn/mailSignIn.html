@@ -13,7 +13,7 @@
 
     <ion-item class="clean-stack-input">
         <ion-label stacked>EMAIL</ion-label>
-        <ion-input type="mail" [(ngModel)]="email"
+        <ion-input type="email" [(ngModel)]="email"
             (input)="email=email.toLowerCase()"
             (keyup.enter)="checkSignInMail()" 
             [class.unbold]="!email" placeholder="email@school.com" name="email" ></ion-input>

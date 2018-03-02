@@ -29,6 +29,7 @@ export class MyApp {
                 if( platform.is('cordova') ){
                     statusBar.backgroundColorByHexString('#999999');
                     splashScreen.hide();
+                    notifications.load();
                 }
             }catch( e ){
                 console.log('Error', e);

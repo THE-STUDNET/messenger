@@ -10,22 +10,25 @@ export class NotificationService {
 
     public token: string;
 
-    constructor( @Inject('Configuration') private config, private fcm: FCM, private api: Api, private platform: Platform, private device: Device, private events: Events ) {
-        if( platform.is('cordova') ){
+    constructor( @Inject('Configuration') private config, private fcm: FCM, private api: Api, 
+        private platform: Platform, private device: Device, private events: Events ) {}
+
+    load(){
+        if( this.platform.is('cordova') ){
             try{
                 // Register FCM token when refreshed...
-                fcm.onTokenRefresh().subscribe( token => {
+                this.fcm.onTokenRefresh().subscribe( token => {
                     console.log('token refreshed', token);
-                    api.queue('user.registerFcm',{token:token, uuid: this.device.uuid, package: config.package }).then(()=> this.token = token );
+                    this.api.queue('user.registerFcm',{token:token, uuid: this.device.uuid, package: this.config.package }).then(()=> this.token = token );
                 });
                 // Process events when notifications received.
-                fcm.onNotification().subscribe( data => {
+                this.fcm.onNotification().subscribe( data => {
                     console.log('NTF', data );
                     if( data.data ){
                         try{
                             let ntf = JSON.parse( data.data );
                             if( ntf.type ){
-                                events.process('notification::'+ntf.type, data.wasTapped, ntf.data );
+                                this.events.process('notification::'+ntf.type, data.wasTapped, ntf.data );
                             }
                         }catch( e ){
 

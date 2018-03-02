@@ -324,7 +324,11 @@ export class ConversationPage {
         this.cd.markForCheck();
     }
 
-    onTyping(){
+    onTyping( textarea ){
+        if( this.text.slice(-1) === '\n' ){
+            this.text = this.text.slice(0,-1);
+            this.send( textarea );
+        }
         // Resize content...
         this.content.resize();
         // Send writing events...
@@ -337,7 +341,7 @@ export class ConversationPage {
         }
     }
 
-    send( textarea, $event ){
+    send( textarea, $event? ){
         textarea.focus();
         if( $event ){
             $event.preventDefault();

@@ -69,7 +69,7 @@
     <div class="sender">
         
         <div class="dta">
-            <textarea #senderArea placeholder="Say something..." type="text" (input)="onTyping()"
+            <textarea #senderArea placeholder="Say something..." type="text" (input)="onTyping(senderArea)"
                 [(ngModel)]="text" (keydown.enter)="send(senderArea, $event )" name="text"></textarea>
             <div class="dta-copy">{{ text }}</div>
         </div>
