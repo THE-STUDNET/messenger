@@ -13,17 +13,20 @@ import { ModalComponent } from './modal/modal.component';
 // Directives
 import { UserStatusDirective } from './user_status/user_status.directive';
 import { ModalDirective } from './modal/modal.directive';
+import { NetworkStatusDirective } from './networkStatus/networkStatus.directive';
 
 @NgModule({
     declarations:[
         UserStatusDirective,
         ModalDirective,
-        ModalComponent
+        ModalComponent,
+        NetworkStatusDirective
     ],
     exports:[
         UserStatusDirective,
         ModalDirective,
-        ModalComponent
+        ModalComponent,
+        NetworkStatusDirective
     ]
 })
 export class SharedModule {
@@ -45,5 +48,6 @@ export {
     UsersStatus,
     SoundsManager,
     ModalService,
-    ModalComponent
+    ModalComponent,
+    NetworkStatusDirective
 };

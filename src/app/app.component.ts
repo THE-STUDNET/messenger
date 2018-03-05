@@ -18,9 +18,8 @@ import { ConversationPage } from '../pages/conversation/conversation';
   templateUrl: 'app.html'
 })
 export class MyApp {
-    @ViewChild('navCtrl') navCtrl: NavController
+    @ViewChild('navCtrl') navCtrl: NavController;
     rootPage:any;
-    disconnected: boolean = true;
 
     constructor(platform: Platform, public statusBar: StatusBar, splashScreen: SplashScreen, private account: Account,
         api: Api, private notifications: NotificationService, events: Events, hangout: Hangout, private network:Network,
@@ -29,7 +28,7 @@ export class MyApp {
         platform.ready().then(() => {
             try{
                 if( platform.is('cordova') ){
-                    statusBar.backgroundColorByHexString('#999999');
+                    statusBar.backgroundColorByHexString( this.network.type==="none"?'#e23c3c':'#999999');
                     splashScreen.hide();
                     notifications.load();
                 }
@@ -37,14 +36,12 @@ export class MyApp {
                 console.log('Error', e);
             }
 
-            this.disconnected = this.network.type !== 'none';
             this.network.onDisconnect().subscribe(()=>{
                 statusBar.backgroundColorByHexString('#e23c3c');
-                this.disconnected = true;
             });
+
             this.network.onConnect().subscribe( ()=>{
                 statusBar.backgroundColorByHexString( account.session.id?'#999999':'#0B9290');
-                this.disconnected = true;
             });
 
             if( account.session.id ){
