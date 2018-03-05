@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { NavController, ToastController, Platform } from 'ionic-angular';
 import { AppAvailability } from '@ionic-native/app-availability';
+import { InAppBrowser } from '@ionic-native/in-app-browser';
 
 import { Account } from '../../providers/api/services/account.provider';
 import { MailSignInPage } from '../mailSignIn/mailSignIn';
@@ -16,7 +17,8 @@ export class WelcomePage {
     hasLinkedin: boolean = false;
 
     constructor(public navCtrl: NavController, public toastCtrl: ToastController, public account: Account,
-        private platform:Platform, private appAvailability: AppAvailability ) {
+        private platform:Platform, private appAvailability: AppAvailability, 
+        private iab: InAppBrowser, @Inject('Configuration') private config ) {
 
         if( this.platform.is('ios') ){
             this.appAvailability.check('linkedin://').then( ()=>{
@@ -51,6 +53,10 @@ export class WelcomePage {
 
     navToAbout(){
         this.navCtrl.push(AboutPage);
+    }
+
+    navToTerms(){
+        this.iab.create( this.config.twic_url+'terms-and-conditions' ,'_system');
     }
 
 }
