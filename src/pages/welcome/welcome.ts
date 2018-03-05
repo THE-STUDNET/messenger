@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
-import { NavController, ToastController } from 'ionic-angular';
+import { NavController, ToastController, Platform } from 'ionic-angular';
+import { AppAvailability } from '@ionic-native/app-availability';
+
 import { Account } from '../../providers/api/services/account.provider';
 import { MailSignInPage } from '../mailSignIn/mailSignIn';
 import { AboutPage } from '../about/about';
@@ -10,7 +12,22 @@ import { AboutPage } from '../about/about';
 })
 export class WelcomePage {
 
-    constructor(public navCtrl: NavController, public toastCtrl: ToastController, public account: Account ) {}
+
+    hasLinkedin: boolean = false;
+
+    constructor(public navCtrl: NavController, public toastCtrl: ToastController, public account: Account,
+        private platform:Platform, private appAvailability: AppAvailability ) {
+
+        if( this.platform.is('ios') ){
+            this.appAvailability.check('linkedin://').then( ()=>{
+                this.hasLinkedin = true;
+            }, ()=>{
+
+            });
+        }else{
+            this.hasLinkedin = true;
+        }
+    }
 
     LoginWithLinkedIn(){
         this.account.linkedinLogin().then( () => {},function( err ){

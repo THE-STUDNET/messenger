@@ -2,6 +2,7 @@ import { Component, Inject, ViewChild } from '@angular/core';
 import { Platform, NavController } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
+import { Network } from '@ionic-native/network';
 
 import { Api, Account, NotificationService, ConversationModel } from '../providers/api/api.module';
 import { Events } from '../providers/events/events.provider';
@@ -19,9 +20,10 @@ import { ConversationPage } from '../pages/conversation/conversation';
 export class MyApp {
     @ViewChild('navCtrl') navCtrl: NavController
     rootPage:any;
+    disconnected: boolean = true;
 
     constructor(platform: Platform, public statusBar: StatusBar, splashScreen: SplashScreen, private account: Account,
-        api: Api, private notifications: NotificationService, events: Events, hangout: Hangout,
+        api: Api, private notifications: NotificationService, events: Events, hangout: Hangout, private network:Network,
         private websocket: WebSocket, @Inject('Configuration') private config, cvnModel: ConversationModel ) {
         // When platform is ready, configure plugins & set root page.
         platform.ready().then(() => {
@@ -34,6 +36,16 @@ export class MyApp {
             }catch( e ){
                 console.log('Error', e);
             }
+
+            this.disconnected = this.network.type !== 'none';
+            this.network.onDisconnect().subscribe(()=>{
+                statusBar.backgroundColorByHexString('#e23c3c');
+                this.disconnected = true;
+            });
+            this.network.onConnect().subscribe( ()=>{
+                statusBar.backgroundColorByHexString( account.session.id?'#999999':'#0B9290');
+                this.disconnected = true;
+            });
 
             if( account.session.id ){
                 api.setAuthorization( account.session.token );
@@ -49,7 +61,7 @@ export class MyApp {
         });
         // When user log out => Redirect him on Login page.
         events.on('account::logout', () => {
-            statusBar.backgroundColorByHexString('#E7E7E7');
+            statusBar.backgroundColorByHexString('#999999');
             // Navigate to login page.
             this.rootPage = WelcomePage;
             // Unregister device.

@@ -32,7 +32,7 @@ export class PipesProvider {
             if( you && this.account.session.id === user.id ){
                 return 'You';
             }else if( short ){
-                return user.firstname && user.lastname ? user.firstname[0].toUpperCase()+'. '+user.lastname: (user.nickname||user.email);
+                return user.firstname && user.lastname ? (user.firstname[0].toUpperCase()+'. '+user.lastname): (user.nickname||user.email);
             }else{
                 return user.nickname || (user.firstname &&  (user.firstname+' '+user.lastname) ) || user.email;
             }

@@ -46,7 +46,9 @@ export class ConversationComponent {
         }
 
         this.updateListenerId = this.events.on('conversation.'+this.id+'.updated',()=>{
-            this.cvnModel.get([this.id], true);
+            this.cvnModel.get([this.id], true).then(()=>{
+                this.buildUnread();  
+            }).catch(()=>{});
         });
 
         let p1 = this.lastUnreadIdModel.queue([this.id], true);

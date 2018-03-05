@@ -1,11 +1,11 @@
 {
   "name": "TWIC_Messenger",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "author": "The Studnet",
   "homepage": "https://twicbythestudnet.com/",
   "private": true,
   "config": {
-    "env": "dev",
+    "env": "prod",
     "name": "Twic Messenger"
   },
   "scripts": {
@@ -27,6 +27,7 @@
     "@angular/http": "5.0.3",
     "@angular/platform-browser": "5.0.3",
     "@angular/platform-browser-dynamic": "5.0.3",
+    "@ionic-native/app-availability": "^4.5.3",
     "@ionic-native/core": "4.4.0",
     "@ionic-native/device": "^4.3.0",
     "@ionic-native/fcm": "^4.3.0",
@@ -34,18 +35,21 @@
     "@ionic-native/keyboard": "^4.5.3",
     "@ionic-native/linkedin": "^4.2.1",
     "@ionic-native/native-audio": "^4.5.3",
+    "@ionic-native/network": "^4.5.3",
     "@ionic-native/splash-screen": "4.4.0",
     "@ionic-native/status-bar": "4.4.0",
     "@ionic/storage": "2.1.3",
     "cordova-android": "6.4.0",
     "cordova-browser": "5.0.3",
     "cordova-custom-config": "^4.0.2",
+    "cordova-plugin-appavailability": "^0.4.2",
     "cordova-plugin-cocoapod-support": "^1.3.0",
     "cordova-plugin-device": "^1.1.7",
     "cordova-plugin-fcm": "^2.1.2",
     "cordova-plugin-inappbrowser": "^2.0.2",
     "cordova-plugin-linkedin": "^1.2.1",
     "cordova-plugin-nativeaudio": "^3.0.9",
+    "cordova-plugin-network-information": "^2.0.1",
     "cordova-plugin-splashscreen": "^4.1.0",
     "cordova-plugin-statusbar": "^2.4.1",
     "cordova-plugin-whitelist": "^1.3.3",
@@ -75,7 +79,9 @@
       "cordova-plugin-cocoapod-support": {},
       "cordova-plugin-fcm": {},
       "cordova-plugin-nativeaudio": {},
-      "cordova-plugin-inappbrowser": {}
+      "cordova-plugin-inappbrowser": {},
+      "cordova-plugin-appavailability": {},
+      "cordova-plugin-network-information": {}
     },
     "platforms": [
       "browser",

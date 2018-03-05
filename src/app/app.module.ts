@@ -9,6 +9,8 @@ import { Device } from '@ionic-native/device';
 import { Keyboard } from '@ionic-native/keyboard';
 import { InAppBrowser } from '@ionic-native/in-app-browser';
 import { NativeAudio } from '@ionic-native/native-audio';
+import { AppAvailability } from '@ionic-native/app-availability';
+import { Network } from '@ionic-native/network';
 
 import { MyApp } from './app.component';
 import { LoginPage } from '../pages/login/login';
@@ -114,6 +116,8 @@ import { Hangout } from '../providers/hangout/hangout.provider';
         Keyboard,
         InAppBrowser,
         NativeAudio,
+        AppAvailability,
+        Network,
         {provide: ErrorHandler, useClass: IonicErrorHandler},
         {provide: "Configuration", useValue: configuration }
     ]
