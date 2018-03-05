@@ -81,6 +81,10 @@ button.swiper-pagination-bullet{
     display: none;
 }
 
+.ios #networkStatus{
+    padding-top: 1.5rem;
+}
+
 #networkStatus.disconnected{
     display: block;
 }
@@ -114,6 +118,10 @@ button.swiper-pagination-bullet{
 
 .ios .invisibleheader{
     margin-top: 1.5rem;
+}
+
+.disconnected + ion-nav .invisibleheader{
+    margin-top: 0;
 }
 
 .invisibleheader{
@@ -177,6 +185,10 @@ button.swiper-pagination-bullet{
 
 .ios .appheader{
     padding-top:1.5rem;
+}
+
+.disconnected + ion-nav .appheader{
+    padding-top: 0;
 }
 
 ion-footer{
