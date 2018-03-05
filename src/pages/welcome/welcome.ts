@@ -15,12 +15,14 @@ export class WelcomePage {
 
 
     hasLinkedin: boolean = false;
+    showTermsAndConditions: boolean = false;
 
     constructor(public navCtrl: NavController, public toastCtrl: ToastController, public account: Account,
         private platform:Platform, private appAvailability: AppAvailability, 
         private iab: InAppBrowser, @Inject('Configuration') private config ) {
 
         if( this.platform.is('ios') ){
+            this.showTermsAndConditions = true;
             this.appAvailability.check('linkedin://').then( ()=>{
                 this.hasLinkedin = true;
             }, ()=>{
