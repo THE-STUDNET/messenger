@@ -48,4 +48,8 @@ export class ProfilePage {
         this.navCtrl.pop();
     }
 
+    logout(){
+        //console.log('WTF?');
+        this.account._logout();
+    }
 }

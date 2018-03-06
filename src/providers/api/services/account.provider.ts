@@ -1,6 +1,6 @@
 
 import { Injectable } from '@angular/core';
-import { App } from 'ionic-angular';
+import { App, Platform } from 'ionic-angular';
 // Providers
 import { Api } from './api.provider';
 import { Events } from '../../events/events.provider';
@@ -9,11 +9,14 @@ import { LinkedIn } from '@ionic-native/linkedin';
 @Injectable()
 export class Account {
 
+    public preSignedSession: any;
+
     public session: {
         id?:number,
         token?:string,
         wstoken?:string,
-        fbtoken?:string
+        fbtoken?:string,
+        cgu_accepted?: boolean
     } = {};
 
     public errors = {
@@ -21,7 +24,7 @@ export class Account {
         ACCOUNT_INVALID: -32033
     };
 
-    constructor(public api: Api, public ionicApp: App, private linkedIn: LinkedIn, private events: Events ) {
+    constructor(public api: Api, public ionicApp: App, private linkedIn: LinkedIn, private events: Events, private platform: Platform ) {
         let sess = localStorage.getItem('session');
         if( sess ){
             Object.assign( this.session, JSON.parse(sess) );
@@ -38,12 +41,13 @@ export class Account {
 
     clear(){
         this.session = {};
-        localStorage.removeItem('session');
+        this.api.setAuthorization();
+        localStorage.clear();
     }
 
     login( credentials: object ){
         return this.api.send( 'user.login', credentials )
-            .then( data => { this._login(data); } );
+            .then( data => this._login(data) );
     }
 
     linkedinLogin(): Promise<any>{
@@ -54,6 +58,14 @@ export class Account {
                         .then( data => this._login(data) ) );
         }, function( err ){
             throw err;
+        });
+    }
+
+    agreeTermsAndConditions(){
+        return this.api.send('user.acceptCgu',{}).then(()=>{
+            this.session.cgu_accepted = true;
+            localStorage.setItem('session', JSON.stringify(this.session));
+            this.events.process('account::login');
         });
     }
 
@@ -70,14 +82,17 @@ export class Account {
         this.api.setAuthorization( data.token );
         // SET SESSION
         this.session = data;
-        localStorage.setItem('session', JSON.stringify(data));
-        // SEND LOGIN EVENT
-        this.events.process('account::login');
+
+        if( !this.platform.is('ios') || this.session.cgu_accepted ){
+            // SEND LOGIN EVENT
+            localStorage.setItem('session', JSON.stringify(data));
+            this.session.cgu_accepted = true;
+            this.events.process('account::login');
+        }
     }
 
     _logout(){
         this.clear();
-        this.api.setAuthorization();
         this.events.process('account::logout');
     }
 }

@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { NavController, NavParams, ToastController } from 'ionic-angular';
 import { Account } from '../../providers/api/services/account.provider';
 import { ForgotPasswordPage } from '../forgotPassword/forgotPassword';
+import { TermsSignInPage } from '../termsSignIn/termsSignIn';
 import { ModalService } from '../../providers/shared/shared.module';
 
 @Component({
@@ -20,18 +21,24 @@ export class PasswordSignInPage {
 
     login(){
         if( this.password ){
-            this.account.login({user:this.infos.email,password:this.password}).catch(error => {
-                let message;
-                if( error.code === this.account.errors.PASSWORD_INVALID ){
-                    message = 'Incorrect password.';
-                }
-                if( message ){
-                    this.toastCtrl.create({
-                        message: message,
-                        duration: 3000
-                    }).present();
-                }
-            });
+            this.account.login({user:this.infos.email,password:this.password})
+                .then(()=>{
+                    if( !this.account.session.cgu_accepted ){
+                        this.navCtrl.push( TermsSignInPage );
+                    }
+                })
+                .catch(error => {
+                    let message;
+                    if( error.code === this.account.errors.PASSWORD_INVALID ){
+                        message = 'Incorrect password.';
+                    }
+                    if( message ){
+                        this.toastCtrl.create({
+                            message: message,
+                            duration: 3000
+                        }).present();
+                    }
+                });
         }else{
             this.toastCtrl.create({
                 message: 'Password is empty!',

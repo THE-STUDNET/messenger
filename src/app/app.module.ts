@@ -25,6 +25,7 @@ import { HomePage } from '../pages/home/home';
 import { ProfilePage } from '../pages/profile/profile';
 import { NewMessagePage } from '../pages/newMessage/newMessage';
 import { ConversationPage } from '../pages/conversation/conversation';
+import { TermsSignInPage } from '../pages/termsSignIn/termsSignIn';
 
 // Custom components
 import { LiveClassComponent } from '../components/liveclass/liveclass';
@@ -61,6 +62,7 @@ import { Hangout } from '../providers/hangout/hangout.provider';
         ProfilePage,
         NewMessagePage,
         ConversationPage,
+        TermsSignInPage,
         // Components
         ConversationComponent,
         UserResultComponent,
@@ -96,6 +98,7 @@ import { Hangout } from '../providers/hangout/hangout.provider';
         ProfilePage,
         NewMessagePage,
         ConversationPage,
+        TermsSignInPage,
         // Components
         ConversationComponent,
         UserResultComponent,
