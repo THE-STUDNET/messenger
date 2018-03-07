@@ -1,5 +1,5 @@
 import { Component, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { NavController, NavParams, Content } from 'ionic-angular';
+import { NavController, NavParams, Content, PopoverController } from 'ionic-angular';
 import { Keyboard } from '@ionic-native/keyboard';
 import { Subscription } from 'rxjs/Subscription';
 
@@ -9,6 +9,8 @@ import { Events } from '../../providers/events/events.module';
 import { WebSocket, SoundsManager } from '../../providers/shared/shared.module';
 import { Account, ConversationModel, UserModel, MessagesPaginatorProvider,  
     PageModel, ConversationService, ConversationUnreadDateModel } from '../../providers/api/api.module';
+
+import { ConversationPopover } from '../../components/conversationPopover/conversationPopover';
 
 import { _getDeferred } from '../../functions/getDeferred';
 
@@ -52,6 +54,7 @@ export class ConversationPage {
     constructor( public cd: ChangeDetectorRef, private keyboard: Keyboard, public navCtrl: NavController, public params: NavParams, 
         public account: Account, private msgPaginatorProvider: MessagesPaginatorProvider, public cvnService: ConversationService, 
         public events: Events, public ws: WebSocket, public sounds: SoundsManager, public pipesProvider: PipesProvider,
+        public popOverController: PopoverController,
         public cvnModel: ConversationModel, public userModel: UserModel, public pageModel:PageModel, private cURD: ConversationUnreadDateModel ) {
 
         this.conversation = params.get('conversation');
@@ -95,6 +98,13 @@ export class ConversationPage {
             });
             this.load();
         }
+    }
+
+    showSettings( $event ){
+        let popover = this.popOverController.create(ConversationPopover, {conversation_id: this.conversation.id });
+        popover.present({
+            ev: $event
+        });
     }
 
     loadVirtualConversation(){

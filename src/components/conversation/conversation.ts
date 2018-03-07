@@ -5,6 +5,8 @@ import { PipesProvider } from '../../pipes/pipes.provider';
 import { ConversationPage } from '../../pages/conversation/conversation';
 import { Events } from '../../providers/events/events.module';
 import { WebSocket } from '../../providers/shared/shared.module';
+import { Network } from '@ionic-native/network';
+import { Subscription } from 'rxjs/Subscription';
 
 @Component({
   selector: 'conversation',
@@ -23,24 +25,30 @@ export class ConversationComponent {
     page: any;
     conversation: any;
     updateListenerId: any;
+    subcriptions: Subscription[] = [];
+
     public socketListeners: any = {};
     public socket: any;
+    private hasToRefreshConversation: boolean;
 
     constructor( public navCtrl: NavController, private account:Account, private cvnModel: ConversationModel, 
-        public lastUnreadIdModel: ConversationUnreadDateModel, public ws: WebSocket,
+        public lastUnreadIdModel: ConversationUnreadDateModel, public ws: WebSocket, private network: Network,
         private userModel:UserModel, public pipesProvider:PipesProvider, public events: Events ) {
 
         ws.get().then( socket => {
             this.socket = socket;
             this._addSocketListener('ch.read', this.onRead.bind(this) );
         });
+
+        this.subcriptions.push( this.network.onConnect().subscribe(()=>{
+            if( this.hasToRefreshConversation ){
+                this.hasToRefreshConversation = false;
+                this.load();
+            }
+        }));
     }
 
     ngOnChanges(){
-        this.load();
-    }
-
-    load(){
         if( this.updateListenerId ){
             this.events.off( undefined, this.updateListenerId );
         }
@@ -51,6 +59,10 @@ export class ConversationComponent {
             }).catch(()=>{});
         });
 
+        this.load();
+    }
+
+    load(){
         let p1 = this.lastUnreadIdModel.queue([this.id], true);
         let p2 = this.cvnModel.queue([this.id], true);
         
@@ -68,8 +80,14 @@ export class ConversationComponent {
             // Get users data.
             this.userModel.queue(this.other_users).then(()=>{
                 this.loading = false;
-            },()=>{ console.log('ERROR USERS LOADING'); });
-        })).catch(()=>{ console.log('Catched...') });
+            }).catch( ()=> this.onLoadError() );
+        })).catch( ()=> this.onLoadError() );
+    }
+
+    onLoadError(){
+        if( this.network.type === 'none' ){
+            this.hasToRefreshConversation = true;
+        }
     }
 
     buildUnread(){

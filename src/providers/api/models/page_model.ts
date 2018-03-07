@@ -5,12 +5,11 @@ import { AbstractModel } from './abstract_model';
 @Injectable()
 export class PageModel extends AbstractModel {
 
-    constructor(  public api: Api ){
-        super( {
-            cache_model_prefix: 'pg.',
-            cache_list_name: 'pg.ids',
-            _method_get: 'page.get',
-        }, api );
-    }
+    public _method_get: string = 'page.get';
+    public cache_model_prefix: string = 'pg.';
+    public cache_list_name: string = 'pg.ids';
 
+    constructor(  public api: Api ){
+        super( api );
+    }
 }

@@ -20,13 +20,7 @@ export abstract class AbstractModel {
     public cached: any;
     public queued: {deferred: any,ids: any};
 
-    constructor( public options, public api: Api ) {
-
-        Object.assign( this, options );
-
-        //this.list = {};
-        //this._req_aborters = [];
-
+    constructor( public api: Api ) {
         this.cached = JSON.parse( localStorage.getItem(this.cache_list_name) || '[]');
         if( this._emptyOnRefresh ){
             this.clear();
@@ -236,18 +230,12 @@ export abstract class AbstractModel {
 
                 methodDeferred.resolve();
             }, function(){
-                //this._req_aborters.splice( this._req_aborters.indexOf(a) );
-                console.log('ERROR => REJECTING', arguments );
-                
-
                 ids.forEach(function( k ){
                     this._deleteModel( k );
                 }.bind(this));
 
-                console.log( 'HERE?', methodDeferred );
-
                 methodDeferred.reject( arguments );
-            }.bind(this)).catch( function(){ console.log('>TF?!', arguments); } )  ;
+            }.bind(this));
 
             methodDeferred.promise.then(resolve, fail);
         }else{

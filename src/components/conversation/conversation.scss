@@ -1,6 +1,9 @@
 conversation{
     position:relative;
 
+    .i-dots.icon-btn{
+        height:calc( 100% - 1rem) !important;
+    }
 
     .conversation-item{
         line-height: 2rem;
@@ -144,5 +147,39 @@ conversation{
             }
         }
 
+    }
+
+    .mline{
+        height: 1rem;
+        border-radius: .5rem;
+        margin: .5rem 0;
+        width: 75%;
+    }
+    
+    .sline{
+        height: .8rem;
+        border-radius: .4rem;
+        margin: 1.1rem 0 .6rem 0;
+    }
+
+    .circle{
+        position: absolute;
+        width: 4rem;
+        height: 4rem;
+        top: 2rem;
+        left: 2rem;
+        background: $loading-gradient-clr;
+        border-radius: 50%;
+        &::before{
+            content:" ";
+            bottom: -2px;
+            right: 0;
+            position: absolute;
+            width: .9rem;
+            height: .9rem;
+            border-radius: 50%;
+            border: 2px solid #FFF;
+            background: $loading-gradient-clr;
+        }
     }
 }

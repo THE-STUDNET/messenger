@@ -33,6 +33,7 @@ import { ConversationComponent } from '../components/conversation/conversation';
 import { UserResultComponent } from '../components/userResult/userResult';
 import { MessageComponent } from '../components/message/message';
 import { WritingComponent } from '../components/writing/writing';
+import { ConversationPopover } from '../components/conversationPopover/conversationPopover';
 
 // Directives
 import { BackgroundImgDirective } from '../directives/backgroundImage.directive';
@@ -68,6 +69,7 @@ import { Hangout } from '../providers/hangout/hangout.provider';
         UserResultComponent,
         MessageComponent,
         WritingComponent,
+        ConversationPopover,
         // Directives
         BackgroundImgDirective,
         // OLD
@@ -104,6 +106,7 @@ import { Hangout } from '../providers/hangout/hangout.provider';
         UserResultComponent,
         MessageComponent,
         WritingComponent,
+        ConversationPopover,
         // OLD
         LoginPage,
         LiveClassesPage,

@@ -5,13 +5,13 @@ import { AbstractModel } from './abstract_model';
 @Injectable()
 export class ConversationUnreadDateModel extends AbstractModel {
 
-    constructor(  public api: Api ){
-        super( {
-            cache_size: 0,
-            cache_model_prefix: 'cur.',
-            cache_list_name: 'cur.ids',
-            _method_get: 'conversation.getReadDates',
-        }, api );
-    }
+    public _method_get: string = 'conversation.getReadDates';
 
+    public cache_model_prefix: string = 'cur.';
+    public cache_list_name: string = 'cur.ids';
+    public cache_size: number = 0;
+
+    constructor(  public api: Api ){
+        super( api );
+    }
 }

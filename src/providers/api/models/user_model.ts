@@ -5,12 +5,11 @@ import { AbstractModel } from './abstract_model';
 @Injectable()
 export class UserModel extends AbstractModel {
 
-    constructor(  public api: Api ){
-        super( {
-            cache_model_prefix: 'usr.',
-            cache_list_name: 'u.ids',
-            _method_get: 'user.get',
-        }, api );
-    }
+    public _method_get: string = 'user.get';
+    public cache_model_prefix: string = 'usr.';
+    public cache_list_name: string = 'u.ids';
 
+    constructor(  public api: Api ){
+        super( api );
+    }
 }

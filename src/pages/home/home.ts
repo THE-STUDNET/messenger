@@ -1,5 +1,8 @@
 import { Component } from '@angular/core';
-import { NavController } from 'ionic-angular';
+import { NavController, ToastController } from 'ionic-angular';
+import { Network } from '@ionic-native/network';
+import { Subscription } from 'rxjs/Subscription';
+
 // PROVIDERS
 import { Account, UserModel, ConversationsPaginator, ConversationModel } from '../../providers/api/api.module';
 import { WebSocket, SoundsManager } from '../../providers/shared/shared.module';
@@ -15,18 +18,20 @@ import { NewMessagePage } from '../newMessage/newMessage';
 export class HomePage {
 
     public user: any;
+    public hasToRefreshConversations: any;
     public loading:boolean = true;
     public socket: any;
     public onMessage: any;
     public eventListeners: any[] = [];
+    public subscriptions: Subscription[] = [];
 
-    constructor( public navCtrl: NavController, public account: Account, public userModel: UserModel, 
+    constructor( public navCtrl: NavController, public account: Account, public userModel: UserModel, public toastCtrl: ToastController,
         public conversationsPaginator: ConversationsPaginator, public conversationModel: ConversationModel,
-        private ws: WebSocket, private events: Events, private sounds: SoundsManager ) {
+        private ws: WebSocket, private events: Events, private sounds: SoundsManager, private network: Network ) {
             // Get user account informations.
             userModel.get([account.session.id]).then(()=>{
                 this.user = userModel.list[account.session.id];
-            });
+            }).catch(()=>{});
             // Get user conversations.
             if( conversationsPaginator.list.length ){
                 this.loading = false;
@@ -42,14 +47,35 @@ export class HomePage {
                 let data = event.data[1];
                 this._onMessage({conversation_id:data.conversation,id:data.message});
             }) );
+
+            this.subscriptions.push( this.network.onConnect().subscribe(()=>{
+                if( this.hasToRefreshConversations ){
+                    this.hasToRefreshConversations = false;
+                    this.conversationsPaginator.get(true);
+                }
+            }) );
         }
 
     refresh( refresher ){
-        this.conversationsPaginator.get(true).then( () => refresher.complete(), () => refresher.complete());
+        this.conversationsPaginator.get(true).then( () => refresher.complete() ).catch( ()=>{
+            refresher.complete();
+            if( this.network.type === 'none' ){
+                this.hasToRefreshConversations = true;
+            }
+            this.toastCtrl.create({
+                message: this.network.type === 'none' ? 'No internet connection, retry later!':'Sorry, an error occured!',
+                duration: 3000
+            }).present();
+        });
     }
 
     next( infiniteScroll ){
-        this.conversationsPaginator.next().then( () => infiniteScroll.complete() );
+        this.conversationsPaginator.next().then( () => infiniteScroll.complete() ).catch( () => {
+            this.toastCtrl.create({
+                message: this.network.type === 'none' ? 'No internet connection, retry later!':'Sorry, an error occured!',
+                duration: 3000
+            }).present();
+        });
     }
 
     goToProfile(){
@@ -64,16 +90,16 @@ export class HomePage {
         return conversation.id;
     }
 
-    onLoad(){
-        this.loading = false;
-    }
-
     _onMessage( data ){
         let idx = this.conversationsPaginator.indexes.indexOf( data.conversation_id );
         if( idx === -1 || this.conversationsPaginator.list[idx].message.id !== data.id ){
             this.conversationsPaginator.get(true).then( list =>{
                 this._notifyConversations( list );
                 this.sounds.play('newmessage');  
+            }).catch( () => {
+                if( this.network.type === 'none' ){
+                    this.hasToRefreshConversations = true;
+                }
             });
         }
     }
@@ -87,10 +113,19 @@ export class HomePage {
     }
 
     ionViewWillEnter(){
-        this.conversationsPaginator.get(true).then( list =>{
-            this._notifyConversations( list );
-            this.loading = false;
-        });
+        console.log('network?', this.network.type );
+        if( this.network.type !== 'none' ){
+            this.conversationsPaginator.get(true).then( list =>{
+                this._notifyConversations( list );
+                this.loading = false;
+            }).catch(()=>{ 
+                if( this.network.type === 'none' ){
+                    this.hasToRefreshConversations = true;
+                }
+            });
+        }else{
+            this.hasToRefreshConversations = true;
+        }
     }
 
     ngOnDestroy(){
@@ -98,5 +133,6 @@ export class HomePage {
             this.socket.off('ch.message', this.onMessage );
         }
         this.eventListeners.forEach( listenerId => this.events.off(undefined,listenerId) );
+        this.subscriptions.forEach( sub => sub.unsubscribe() );
     }
 }

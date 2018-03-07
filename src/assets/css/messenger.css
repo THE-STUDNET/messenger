@@ -74,3 +74,6 @@
 .i-webcam:before {
   content: "\6c";
 }
+.i-dots:before {
+  content: "\6d";
+}

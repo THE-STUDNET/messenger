@@ -1,16 +1,16 @@
 import { Injectable } from '@angular/core';
-import { Api } from '../services/api.provider';
 import { AbstractModel } from './abstract_model';
+import { Api } from '../services/api.provider';
 
 @Injectable()
 export class ConversationModel extends AbstractModel {
 
-    constructor(  public api: Api ){
-        super( {
-            cache_model_prefix: 'cvn.',
-            cache_list_name: 'cvn.ids',
-            _method_get: 'conversation.get',
-        }, api );
-    }
+    public _method_get: string = 'conversation.get';
 
+    public cache_model_prefix: string = 'cvn.';
+    public cache_list_name: string = 'cvn.ids';
+
+    constructor(  public api: Api ){
+        super( api  );
+    }
 }

@@ -1,10 +1,10 @@
 <ion-header>
     <div class="appheader">
         <div class="top">
-            <div class="avatar-container" (tap)="goToProfile()">
-                <div *ngIf="user" class="head-avatar" 
-                    [backgroundImg]="user.datum.avatar | dmsUrl:[50,'x',50]">{{ user.datum | userletter }}</div>
-            </div>
+            <div class="avatar-container" (tap)="goToProfile()"><!--
+             --><div *ngIf="user" class="head-avatar" 
+                    [backgroundImg]="user.datum.avatar | dmsUrl:[50,'x',50]">{{ user.datum | userletter }}</div><!--
+         --></div>
             <img class="logo" src="assets/images/logo.svg">
     
             <button class="icon-btn i i-edit"

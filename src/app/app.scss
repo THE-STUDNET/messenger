@@ -215,6 +215,12 @@ ion-footer{
             justify-content: center;
         }
 
+        .avatar-container:empty{
+            border-radius: 50%;
+            border: 1rem map-get($colors, primary) solid;
+            background: $text-color;
+        }
+
         .icon-btn{
             height: 100%;
         }
