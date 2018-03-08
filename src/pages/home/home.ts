@@ -71,10 +71,14 @@ export class HomePage {
 
     next( infiniteScroll ){
         this.conversationsPaginator.next().then( () => infiniteScroll.complete() ).catch( () => {
-            this.toastCtrl.create({
-                message: this.network.type === 'none' ? 'No internet connection, retry later!':'Sorry, an error occured!',
-                duration: 3000
-            }).present();
+            setTimeout( () => {
+                this.toastCtrl.create({
+                    message: this.network.type === 'none' ? 'No internet connection, retry later!':'Sorry, an error occured!',
+                    duration: 3000
+                }).present();
+                
+                infiniteScroll.complete()
+            }, 300 );
         });
     }
 

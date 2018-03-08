@@ -1,6 +1,7 @@
 import { Component, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { NavController, NavParams, Content, PopoverController } from 'ionic-angular';
 import { Keyboard } from '@ionic-native/keyboard';
+import { Network } from '@ionic-native/network';
 import { Subscription } from 'rxjs/Subscription';
 
 import { PipesProvider } from '../../pipes/pipes.provider';
@@ -23,7 +24,6 @@ export class ConversationPage {
     @ViewChild(Content) content: Content;
 
     public loading:boolean = true;
-    public loadingUsers: boolean = true;
 
     public creating:Promise<any>;
     public socket:any;
@@ -41,24 +41,317 @@ export class ConversationPage {
 
     public onKeyboardShow: Subscription;
     public refreshingPromise: Promise<any>;
-    public onMessageLoaded:any;
     public writingTimeout: any;
 
-    public socketListeners: any = {};
-    public eventListeners: any = [];
+    
 
     public loadBehaviour: string = 'godown';
     public prevScrollHeight: number;
     public prevScrollY: number;
+
+
+    // NEW!
+    public onMessageLoaded: any;
+    public hasToCreate: boolean = false;
+    public msg_ids: any[] = [];
+    public msg_data: any = {}
+
+    public users_promise: Promise<any>;
     
+    public loadingUsers: boolean = true;
+    public loadingConversation: boolean = true;
+
+    private socketListeners: any = {};
+    private eventListeners: any = [];
+    private subscriptions: Subscription[] = [];
+    
+    private _listenCommonEvents(){
+        // Scroll to conversation bottom when keyboard is opened.
+        this.subscriptions.push( this.keyboard.onKeyboardShow().subscribe( ()=>{
+            this.content.scrollTo( 0, this.content.getContentDimensions().scrollHeight );
+        }) );
+    }
+
+    private _listenConversationEvents(){
+        // Listen to paginator self updates ( When a message is sent the paginator refresh its own list ).
+        this.eventListeners.push( this.events.on('cvn'+this.conversation.id+'.messages.update',this._onRefresh.bind(this)) );
+        // Listen to notification
+        this.eventListeners.push( this.events.on('notification::message', ( event )=>{
+            let wasTapped = event.data[0],
+                data = event.data[1];
+            if( !wasTapped ){
+                this._onMessage( data.conversation, data.message );
+            }
+        }) );
+        // Listen to websocket
+        this.ws.get().then( socket => {
+            this.socket = socket;
+            this._addSocketListener('ch.message', this._onWSMessage.bind(this) );
+            this._addSocketListener('ch.writing', this._onWSWriting.bind(this) );
+            this._addSocketListener('ch.read', this._onWSRead.bind(this) );
+        });
+    }
+
+    // Complete 'usersLastUnreadId' from a message list.
+    // (Object telling which of your message is the last read by each conversation users) 
+    private _buildReadDates( messageList ){
+        if( Object.keys(this.usersLastUnreadId).length !== this.users.length
+            && this.cURD.list[this.conversation.id] && this.cURD.list[this.conversation.id].datum ){
+            let usersLastUnreadId = this.cURD.list[this.conversation.id].datum;
+
+            messageList.some( message => {
+                if( this.account.session.id === message.user_id ){
+                    this.users.forEach( user_id =>{
+                        if( this.usersLastUnreadId[user_id] === undefined ){
+                            if( usersLastUnreadId[user_id] === undefined ){
+                                this.usersLastUnreadId[user_id] = false;
+                            }else if( usersLastUnreadId[user_id] > message.id || usersLastUnreadId[user_id] === null ){
+                                this.usersLastUnreadId[user_id] = message.id;
+                            }
+                        }
+                    });
+                    return Object.keys(this.usersLastUnreadId).length === this.users.length;
+                }
+                return false;
+            });
+        }
+    }
+
+    private _buildMessages( ids ){
+
+        
+
+    }
+
+
+
+    private _build( empty?:boolean ){
+        this._buildMessages();
+        if( empty ){
+            this._createEmptyReadDates();
+        }else{
+            this._buildReadDates( this.messagesPaginator.list );
+        }
+
+        if( this.loading ){
+            this.loading = false;                
+            this.cd.markForCheck();
+        }
+    }
+
+    private requestConversation( empty ){
+        var deferred = _getDeferred();
+
+        let readPromise;
+        if( empty ){
+            let deferred = _getDeferred();
+            readPromise = deferred.promise;
+            deferred.resolve();
+        }else{
+            readPromise = this.cURD.get([this.conversation.id],true);
+        }
+
+        this.messagesPaginator.get(true)
+            .then(()=>{ this.cvnService.read( this.conversation.id ); })
+            .then(()=> readPromise.then( () => {
+                deferred.resolve();
+            }))
+            .catch( err => {
+                if( this.network.type === 'none' ){
+                    // Schedule another loadUsers on reconnect.
+                    let subscription;
+                    subscription = this.network.onConnect().subscribe(()=> {
+                        this.subscriptions.splice( this.subscriptions.indexOf(subscription), 1 );
+                        subscription.unsubscribe();
+                        this.requestConversation(empty).then( ()=> deferred.resolve() ).catch( err => deferred.reject(err) );
+                    });
+                    // Push subcription in list to cancel it if user go back.
+                    this.subscriptions.push( subscription );
+                }else{
+                    deferred.reject( err );
+                }
+            });
+
+        return deferred.promise;
+    }
+
+    private loadConversation( empty?:boolean ){
+        // Set messages paginator & get last messages...
+        this.messagesPaginator = this.msgPaginatorProvider.getPaginator(this.conversation.id);
+        // Listen to conversation events...
+        this._listenConversationEvents();
+
+        if( this.network.type === 'none' ){
+            this._build( empty );
+        }else{
+            this.requestConversation( empty ).then(()=>{
+                this._build(empty);
+            }).catch( err => {
+                // DISPLAY AN ERROR
+                console.log('ERR', err);
+            });
+        }
+
+
+        // Get users informations...
+        let p1 = this.loadUsers();
+        // Get messages...
+        let p2 = this.messagesPaginator.get(true).then(()=>{
+            this.cvnService.read( this.conversation.id );
+        });
+        
+        let p3;
+        if( creating ){
+            let deferred = _getDeferred();
+            p3 = deferred.promise;
+            deferred.resolve();
+        }else{
+            // Get conversation users read dates
+            p3 = this.cURD.get([this.conversation.id],true);
+        }
+        // Wait for informations => Loaded! 
+        p1.then(()=>p2.then(()=> p3.then(() => {
+            Array.prototype.unshift.apply(this.indexes , this.messagesPaginator.indexes.slice().reverse() );
+            if( creating ){
+                this._createEmptyReadDates();
+            }else{
+                this._buildReadDates( this.messagesPaginator.list );
+            }
+            if( this.loading ){
+                this.loading = false;                
+                this.cd.markForCheck();
+            }
+        }))).catch(()=>{ console.log('catch'); });
+    }
+
+    loadCreation(){
+        this.hasToCreate = true;
+        /*this.users_promise.then(()=>{
+            this.loadingConversation = false;
+            this.cd.markForCheck();
+        });*/
+    }
+
+    loadUsers(): Promise<any>{
+        let deferred = _getDeferred();
+        this.userModel.get(this.users).then(()=>{
+            // If one to one conversation -> get organization infos.
+            if( this.users.length === 1 && this.userModel.list[this.users[0]].datum.organization_id ){
+                return this.pageModel
+                    .get([this.userModel.list[this.users[0]].datum.organization_id])
+                    .then(()=>deferred.resolve());
+            }else{
+                deferred.resolve();
+            }
+        }).catch( err => {
+            if( this.network.type === 'none' ){
+                // Schedule another loadUsers on reconnect.
+                let subscription;
+                subscription = this.network.onConnect().subscribe(()=> {
+                    this.subscriptions.splice( this.subscriptions.indexOf(subscription), 1 );
+                    subscription.unsubscribe();
+                    this.loadUsers().then( ()=> deferred.resolve() ).catch( err => deferred.reject(err) );
+                });
+                // Push subcription in list to cancel it if user go back.
+                this.subscriptions.push( subscription );
+            }else{
+                deferred.reject( err );
+            }
+        });
+        return deferred.promise;
+    }
+
+    getConversation( id:number ){
+        return this.cvnModel.get([id]).then( () => {
+            this.conversation = this.cvnModel.list[id].datum;
+            this.loadConversation();
+        }).catch( err => {
+            if( this.network.type === 'none' ){
+                // Schedule another getConversation on reconnect.
+                let subscription;
+                subscription = this.network.onConnect().subscribe(()=> {
+                    this.subscriptions.splice( this.subscriptions.indexOf(subscription), 1 );
+                    subscription.unsubscribe();
+                    this.getConversation( id );
+                });
+                // Push subcription in list to cancel it if user go back.
+                this.subscriptions.push( subscription );
+            }else{
+                // Display an error
+                console.log('ERROR conversation:getConversation', err, id );
+            }
+        });
+    }
+
+    asyncLoadConversation(){
+        return this.cvnService.getUsersConversationId( this.params.get('users') ).then( id => {
+            if( id ){
+                this.getConversation( id );
+            }else{
+                this.loadCreation();
+            }
+        }).catch( err =>{
+            if( this.network.type === 'none' ){
+                // Schedule another asyncLoad on reconnect.
+                let subscription;
+                subscription = this.network.onConnect().subscribe(()=> {
+                    this.subscriptions.splice( this.subscriptions.indexOf(subscription), 1 );
+                    subscription.unsubscribe();
+                    this.asyncLoadConversation();
+                });
+                // Push subcription in list to cancel it if user go back.
+                this.subscriptions.push( subscription );
+            }else{
+                // Display an error.
+                console.log('ERROR conversation:asyncLoad', err );
+            }
+        });
+    }
+
     constructor( public cd: ChangeDetectorRef, private keyboard: Keyboard, public navCtrl: NavController, public params: NavParams, 
         public account: Account, private msgPaginatorProvider: MessagesPaginatorProvider, public cvnService: ConversationService, 
         public events: Events, public ws: WebSocket, public sounds: SoundsManager, public pipesProvider: PipesProvider,
-        public popOverController: PopoverController,
+        public popOverController: PopoverController, public network: Network,
         public cvnModel: ConversationModel, public userModel: UserModel, public pageModel:PageModel, private cURD: ConversationUnreadDateModel ) {
 
-        this.conversation = params.get('conversation');
+        // Define self binded function for message components.
         this.onMessageLoaded = this._onMessageLoaded.bind(this);
+        // Try to set conversation.
+        this.conversation = params.get('conversation');
+        // Build users array.    
+        ( params.get('users') || this.conversation.users ).forEach( id => {
+            if( id !== account.session.id ){
+                this.users.push(id);
+            }
+        });
+        // Load users.
+        this.users_promise = this.loadUsers().then(()=> {
+            this.loadingUsers = false;
+            this.cd.markForCheck();
+        }).catch(()=>{
+            // Display error !
+        });
+        // Listen to common events.
+        this._listenCommonEvents();
+        // If conversation, load conversation.
+        // Else try to get conversation & load it OR set creating to true.
+        if( this.conversation ){
+            this.loadConversation();
+        }else{
+            this.asyncLoadConversation();
+        }
+
+
+
+
+
+
+
+
+
+
+
+        
 
         // Bind scroll on keyboard open...
         this.onKeyboardShow = this.keyboard.onKeyboardShow().subscribe( ()=>{
@@ -104,13 +397,6 @@ export class ConversationPage {
         let popover = this.popOverController.create(ConversationPopover, {conversation_id: this.conversation.id });
         popover.present({
             ev: $event
-        });
-    }
-
-    loadVirtualConversation(){
-        this.loadUsers().then(()=>{
-            this.loading = false;
-            this.cd.markForCheck();
         });
     }
 
@@ -166,20 +452,7 @@ export class ConversationPage {
         }))).catch(()=>{ console.log('catch'); });
     }
 
-    loadUsers(): Promise<any>{
-        return this.userModel.get(this.users).then(()=>{
-            // If one to one conversation -> get organization infos.
-            if( this.users.length === 1 && this.userModel.list[this.users[0]].datum.organization_id ){
-                return this.pageModel.get([this.userModel.list[this.users[0]].datum.organization_id]).then(()=>{
-                    this.loadingUsers = false;
-                    this.cd.markForCheck();
-                },()=>{ console.log('Pages loading err'); });
-            }else{
-                this.loadingUsers = false;
-                this.cd.markForCheck();
-            }
-        });
-    }
+    
     
     previous( refresher ){
         if( this.messagesPaginator ){
@@ -198,28 +471,6 @@ export class ConversationPage {
                 refresher.complete();
                 this.cd.markForCheck();
             },()=>refresher.complete());
-        }
-    }
-
-    _buildReadDates( messageList ){
-        if( Object.keys(this.usersLastUnreadId).length !== this.users.length ){
-            let usersLastUnreadId = this.cURD.list[this.conversation.id].datum;
-
-            messageList.some( message => {
-                if( this.account.session.id === message.user_id ){
-                    this.users.forEach( user_id =>{
-                        if( this.usersLastUnreadId[user_id] === undefined ){
-                            if( usersLastUnreadId[user_id] === undefined ){
-                                this.usersLastUnreadId[user_id] = false;
-                            }else if( usersLastUnreadId[user_id] > message.id || usersLastUnreadId[user_id] === null ){
-                                this.usersLastUnreadId[user_id] = message.id;
-                            }
-                        }
-                    });
-                    return Object.keys(this.usersLastUnreadId).length === this.users.length;
-                }
-                return false;
-            });
         }
     }
 

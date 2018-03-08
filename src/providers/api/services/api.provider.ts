@@ -1,4 +1,5 @@
 import 'rxjs/add/operator/toPromise';
+import { retry } from 'rxjs/operators';
 
 import { Injectable, Inject } from '@angular/core';
 import { Http, RequestOptionsArgs, Headers, Response } from '@angular/http';
@@ -35,6 +36,7 @@ export class Api {
     send( method: string, params: object, timeout?: number|Promise<any> ): Promise<any>{
         let deferred = _getDeferred();
         let subscriber = this.http.post(this.url,{jsonrpc:'2.0',method:method, params:params,id: this.id++, }, this.options )
+            .pipe(retry(2))            
             .subscribe( 
                 (response: Response) => {
                     try{
@@ -106,6 +108,7 @@ export class Api {
         this.preparingBatch = false;
 
         this.http.post(this.url, batch, this.options )
+            .pipe(retry(2))
             .toPromise().then( response => {
                 try{
                     var rpcResponse = response.json();
