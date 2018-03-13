@@ -85,7 +85,10 @@ import { Hangout } from '../providers/hangout/hangout.provider';
         PipesModule.forRoot(),
         EventsModule.forRoot(),
         ApiModule.forRoot(),
-        IonicStorageModule.forRoot(),
+        IonicStorageModule.forRoot({
+            name: '__mydb',
+            driverOrder: [ 'sqlite', 'indexeddb', 'websql']
+        }),
         IonicModule.forRoot(MyApp)
     ],
     bootstrap: [IonicApp],

@@ -23,22 +23,22 @@
         <ion-spinner></ion-spinner>
     </div>
 
-    <ion-refresher (ionRefresh)="previous($event)" [enabled]="!loading">
+    <ion-refresher (ionRefresh)="previous($event)" [enabled]="!loading && !hasToCreate">
         <ion-refresher-content></ion-refresher-content>
     </ion-refresher>
 
     <div class="messages" *ngIf="!loading && messagesPaginator">
-        <message *ngFor="let messageId of indexes; trackBy trackMessageId;"
+        <message *ngFor="let messageId of messagesPaginator.displayableIndexes; trackBy trackMessageId;"
             [messageId]="messageId" [paginator]="messagesPaginator" 
             [readIds]="usersLastUnreadId" [loaded]="onMessageLoaded"></message>
     </div>
     
     <div class="messages" *ngIf="!loading && messagesPaginator">
-        <message *ngFor="let message of messagesPaginator.sendings" (tap)="messageTapped(message)"
+        <message *ngFor="let message of messagesPaginator.sendingMessages" (tap)="messageTapped(message)"
             [message]="message" [paginator]="messagesPaginator" [loaded]="onMessageLoaded"></message>
     </div>        
 
-    <div class="queued-messages" *ngIf="!loading && (!messagesPaginator || !messagesPaginator.sendings.length)">
+    <div class="queued-messages" *ngIf="!loading && (!messagesPaginator || !messagesPaginator.sendingMessages.length)">
         <message *ngFor="let message of queuedMessages" (tap)="messageTapped(message)"
             [message]="message" [paginator]="messagesPaginator" [loaded]="onMessageLoaded"></message>
     </div>

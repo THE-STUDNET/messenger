@@ -16,6 +16,7 @@ import { ConversationsPaginator } from './paginators/conversations_paginator';
 
 // Services
 import { Api } from './services/api.provider';
+import { Garbage } from './services/garbage.provider';
 import { Account } from './services/account.provider';
 import { ConversationService } from './services/conversation.provider';
 import { MessagesPaginatorProvider } from './services/messages.provider';
@@ -43,6 +44,7 @@ export class ApiModule {
                 // Services
                 Account,
                 Api,
+                Garbage,
                 MessagesPaginatorProvider,
                 ConversationService,
                 LiveClassesService,
@@ -55,6 +57,7 @@ export class ApiModule {
 export {
     // Services
     Api,
+    Garbage,
     Account,
     MessagesPaginatorProvider,
     ConversationService,

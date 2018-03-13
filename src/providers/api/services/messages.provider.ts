@@ -2,10 +2,13 @@ import { Injectable } from '@angular/core';
 import { Storage } from '@ionic/storage';
 // Providers
 import { Api } from '../services/api.provider';
+import { Garbage } from '../services/garbage.provider';
 import { Account } from '../services/account.provider';
 import { AbstractPaginator } from '../paginators/abstract_paginator';
 import { Events } from '../../events/events.module';
-import { _getDeferred } from 'src/functions/getDeferred';
+import { _getDeferred } from '../../../functions/getDeferred';
+import { Network } from '@ionic-native/network';
+import { Subscription } from 'rxjs/Subscription';
 
 export class MessagesPaginator extends AbstractPaginator {
 
@@ -17,10 +20,16 @@ export class MessagesPaginator extends AbstractPaginator {
     public _default_params:any = { conversation_id: this.conversation_id };
     public _method_get:string = 'message.getList';
 
-    public sendings:any[] = JSON.parse(localStorage.getItem('cvn'+this.conversation_id+'.snd')||'[]');
+    public sendingMessages: any[];
+    public failedMessages: any;
+    public newMessages: any[] = [];
+    public messageReadyPromise: Promise<any>;
 
-    constructor( public name:string, public api: Api, public conversation_id:number, public account: Account, public events: Events ){
-        super( 'conversations', api );
+    public displayableIndexes: any[] = [];
+
+    constructor( public name:string, public api: Api, public garbage:Garbage, public storage:Storage, 
+        public conversation_id:number, public events:Events, public network: Network ){
+        super( 'messages'+conversation_id, api, garbage, storage );
     }
 
     formatResult( data:any ): any{
@@ -28,65 +37,171 @@ export class MessagesPaginator extends AbstractPaginator {
         return data.list;
     }
 
-    private _cleanSendings(){
-        let n = this.sendings.length-1;
-        for(;n>=0;n--){
-            if( this.sendings[n].id ){
-                let index = this.indexes.indexOf( this.sendings[n].id );
-                if( index !== -1 ){
-                    this.sendings.splice( n, 1 );
+    initIndexes(){
+        this.indexes = [];
+        this.displayableIndexes = [];
+        if( this.list.length ){
+            this.list.forEach( datum => {
+                let id = parseInt(datum[this._idx_name]);
+                this.indexes.push( id );
+                if( this.failedMessages[id] ){
+                    Object.keys(this.failedMessages[id]).sort().forEach( uid => {
+                        this.displayableIndexes.unshift( uid );
+                    });
                 }
+                this.displayableIndexes.unshift( id );
+            });
+        }
+    }
+
+    _prependDatas( data: any[] ){
+        super._prependDatas( data );
+        // Update displayable indexes list.
+        var i=0, id, length=data.length;            
+        for(;i<length;i++){
+            id = parseInt( data[i][this._idx_name] );
+            if( this.failedMessages[id] ){
+                Object.keys(this.failedMessages[id]).sort((a,b)=> parseInt(b)-parseInt(a)).forEach( uid => {
+                    this.displayableIndexes.unshift( uid );
+                });
+            }
+            this.displayableIndexes.unshift( id );
+        }        
+    }
+
+    _appendDatas( data: any[] ){
+        super._appendDatas( data );
+        // Update displayable indexes list.
+        var id, i= data.length-1;   
+        for(;i>=0;i--){
+            id = parseInt(data[i][this._idx_name]);            
+            this.displayableIndexes.push( id );
+            if( this.failedMessages[id] ){
+                Object.keys(this.failedMessages[id]).sort().forEach( uid => { //(a,b)=> parseInt(b)-parseInt(a)
+                    this.displayableIndexes.push( uid );
+                });
             }
         }
     }
 
-    send( text?:string, library?:object ){
-        // Create message...
-        let uid = 'SND#'+(Math.random()+'').slice(2),
-            message = {
-                user_id: this.account.session.id,
-                text: text,
-                library: library,
-                created_date: (new Date()).toISOString(),
-                id: undefined,
-                sid: uid,
-                sendingFailed: undefined,
-                promise: undefined
-            },
-            promise = this.api.send('message.send', {text:text, conversation_id:this.conversation_id, library:library}).then(data => {
-                message.id = parseInt(data.message_id);
-                // Refresh paginator list...
-                return this.get(true).then( () => {
-                    this.events.process('cvn'+this.conversation_id+'.messages.update');
-                    this._cleanSendings();
-                });
-                
-            }, () => {
-                message.sendingFailed = true;
+    ready(){
+        if( !this.messageReadyPromise ){
+            let sendingPromise = this.storage.get( this.name+'.sendings' ).then( data => {
+                this.sendingMessages = data || [];
             });
-        // Set promise to message
-        message.promise = promise;
-        // Add message to sendings list.
-        this.sendings.push( message );
-        // Return.
+            let failedPromise = this.storage.get( this.name + '.failed' ).then( data => {
+                this.failedMessages = data || {};
+            });
+            this.messageReadyPromise = sendingPromise.then(()=>failedPromise.then( ()=>super.ready() ));
+        }
+        return this.messageReadyPromise;
+    }
+
+    refresh(){
+        return this.get(true).then( data => {
+            // Clean sending messages.
+            this.sendingMessages.forEach( m => {
+                if( m.id ){
+                    let idx = this.indexes.indexOf( m.id );
+                    this._removeSending( idx );
+                }
+            });
+            // Process event.
+            this.events.process( this.name +'.updated', data );
+        });
+    }
+
+    addSending( text?:string, library?:any ){
+        let message = { text:text, library:library, id:undefined };
+        this.sendingMessages.push(message);
+        this.storage.set( this.name +'.sendings', this.sendingMessages );
         return message;
     }
 
-    resend( message ){
-        let idx = this.sendings.indexOf(message);
+    removeSending( message ){
+        let idx = this.sendingMessages.indexOf( message );
         if( idx !== -1 ){
-            this.sendings.splice( idx, 1 );
-            this.send( message.text, message.library );
+            this._removeSending(idx);
         }
+    }
+
+    _removeSending( idx ){
+        this.sendingMessages.splice(idx, 1);
+        this.storage.set( this.name + '.sendings', this.sendingMessages );
+    }
+
+    addFailed( message: any ){
+        if( !this.failedMessages[message.prev_id] ){
+            this.failedMessages[message.prev_id] = {};
+        }
+        message.uid = message.prev_id + '.'+ Date.now();
+        this.failedMessages[message.prev_id][message.uid] = message;
+        this.displayableIndexes.push( message.uid );
+        this.storage.set( this.name +'.failed', this.failedMessages );
+    }
+
+    removeFailed( message:any ){
+        delete(this.failedMessages[message.prev_id][message.uid]);
+        if( !Object.keys(this.failedMessages[message.prev_id]).length ){
+            delete(this.failedMessages[message.prev_id]);
+        }
+        let idx = this.displayableIndexes.indexOf( message.uid );
+        if( idx !== -1 ){
+            this.displayableIndexes.splice(idx, 1 );
+        }
+        this.storage.set( this.name +'.failed', this.failedMessages);
+    }
+
+    resend( message:any ){
+        this.removeFailed( message );
+        return this.send( message.text, message.library );
+    }
+
+    send( text?:string, library?:object ){
+        // Register message.
+        let message = this.addSending( text, library );
+        // Send message.
+        this._send(message);
+    }
+
+    _send( message ){
+        return this.api.send('message.send', {text:message.text, conversation_id:this.conversation_id, library:message.library})
+            .then( data => {
+                message.id = data.id;
+                return this.refresh();
+            }, err => {
+                if( this.network.type !== 'none' ){
+                    return this._send( message );
+                }else{
+                    return this._messageFailed( message );
+                }
+            });
+    }
+
+    _messageFailed( message ){
+        this.removeSending( message );
+        this.addFailed({ text:message.text, library:message.library, prev_id: this.indexes[0]} );
+        this.events.process( this.name + '.updated', [] );
+    }
+
+    clear(){
+        super.clear();
+        // Clear cached...
+        this.storage.remove( this.name + '.failed' );
+        this.storage.remove( this.name + '.sendings' );
+        // Clear in memory...
+        this.sendingMessages = [];
+        this.failedMessages = {};
+        this.newMessages = [];
     }
 }
 
 @Injectable()
 export class MessagesPaginatorProvider {
 
-    public cache_size: number = 5;
     public list: any = {};
-    public cached: number[] = JSON.parse(localStorage.getItem('mpp')||'[]');
+    public listeners: any[] = [];
+      
 
     public waitingMessages: any = {};
     public waitingConversations: number[];
@@ -98,71 +213,120 @@ export class MessagesPaginatorProvider {
     private wc_storing: number = 0;
     private wcm_storings: any = {};
 
-    constructor( public api: Api, public account: Account, public events: Events, public storage: Storage){}
+    constructor( public api: Api, public account: Account, public events: Events, 
+        public storage: Storage, public garbage:Garbage, public network:Network){
+            
+        this.listeners.push( this.events.on('message.new', event => this.onNewMessage(event) ) );
+        this.garbage.register( this );
+    }
 
     getPaginator( conversation_id:number ): MessagesPaginator{
         if( !this.list[conversation_id] ){
-            this.list[conversation_id] = new MessagesPaginator('cvn'+conversation_id, this.api, conversation_id, this.account, this.events );
-
-            this.cached.push( conversation_id );
-            if( this.cached.length > this.cache_size ){
-                var remId = this.cached.shift();                
-                if( this.list[remId] ){
-                    this.list[remId].cache_size = 0;                                
-                }
-                localStorage.removeItem('cvn'+conversation_id);
-            }
-            localStorage.setItem('mpp',JSON.stringify(this.cached));
+            this.list[conversation_id] = new MessagesPaginator('cvn'+conversation_id, this.api, this.garbage, this.storage, conversation_id, this.events, this.network );
         }
         return this.list[conversation_id];
     }
 
+    onNewMessage( event ){
+        let message = event.data[0],
+            paginator = this.getPaginator( message.conversation_id );
+
+
+        //paginator.;
+    }
+
+    clear(){
+        this.list = {};
+        this.listeners.forEach( listener => this.events.off(undefined, listener) );
+    }
+}
+
+
+
+
+
+/*
     send( conversation_id:number, prev_id:number, text?:string, library?:object ){
         // Register message.
-        let wid = this._setWaitingMessage( conversation_id, prev_id, 'sending', text, library );
+        let wid = this.setWaitingMessage( conversation_id, prev_id, 'sending', text, library );
         // Send message.
         return this.api.send('message.send', {text:text, conversation_id:conversation_id, library:library})
             .then( data => {
                 // If paginator exist, refresh it.
                 if( this.list[conversation_id] ){
                     // Update waiting message status.
-                    this._updateWaitingMessage( conversation_id, prev_id, wid, 'sent' );
+                    this.updateWaitingMessage( conversation_id, prev_id, wid, 'sent' );
                     // Refresh
                     return this.list[conversation_id].get(true).then( ()=>{
-                        this._removeWaitingMessage( conversation_id, prev_id, wid );
+                        this.removeWaitingMessage( conversation_id, prev_id, wid );
                         this.events.process('cvn'+conversation_id+'.messages.update');
                     }).catch( () => {
 
                     });
                 }else{
                     // Delete waiting message.
-                    this._removeWaitingMessage( conversation_id, prev_id, wid );
+                    this.removeWaitingMessage( conversation_id, prev_id, wid );
                     // Process conversation update event.
                     this.events.process('cvn'+conversation_id+'.messages.update');
                 }
             }, err => {
-                this._updateWaitingMessage( conversation_id, prev_id, wid, 'failed' );
+                this.updateWaitingMessage( conversation_id, prev_id, wid, 'failed' );
                 this.events.process('cvn'+conversation_id+'.messages.update');
             });
     }
 
     resend( conversation_id:number, old_prev_id:number, new_prev_id:number, wid: string ){
         let m = this.waitingMessages[conversation_id][old_prev_id][wid];
-        this._removeWaitingMessage( conversation_id, old_prev_id, wid );
+        this.removeWaitingMessage( conversation_id, old_prev_id, wid );
         return this.send( conversation_id, new_prev_id, m.text, m.library );
     }
 
-    private _removeWaitingMessage( conversation_id:number, prev_id:number, wid:string ){
-        delete( this.waitingMessages[conversation_id][prev_id][wid] );
-        this._storeWaitingConversationMessages(conversation_id);
+    getWaitingConversation( conversation_id:number ){
+        let deferred = _getDeferred();
+        if( this.waitingMessages[conversation_id] ){
+            deferred.resolve( this.waitingMessages[conversation_id] );
+        }else{
+            this.getWaitingConversations().then(()=>{
+                this._getCachedWaitingConversationMessages( conversation_id )
+                    .then(()=> deferred.resolve( this.waitingMessages[conversation_id] ));
+            });
+        }
+        return deferred.promise;
     }
 
-    private _updateWaitingMessage( conversation_id:number, prev_id:number, wid:string, status:string ){
+    getWaitingConversations(){
+        let deferred = _getDeferred();
+        if( this.waitingConversations ){
+            deferred.resolve( this.waitingConversations );
+        }else{
+            this._getCachedWaitingConversations().then(()=>deferred.resolve(this.waitingConversations));
+        }
+        return deferred.resolve();
+    }
+
+    removeWaitingMessage( conversation_id:number, prev_id:number, wid:string ){
+        delete( this.waitingMessages[conversation_id][prev_id][wid] );
+        if( !Object.keys(this.waitingConversations[conversation_id][prev_id]).length ){
+            delete( this.waitingMessages[conversation_id][prev_id] );
+        }
+        if( this._isWaitingConversationEmpty( conversation_id ) ){
+            let idx = this.waitingConversations.indexOf(conversation_id);
+            if( idx !== -1){      
+                this.waitingConversations.splice( idx , 1 );
+                this._storeWaitingConversations();
+                this._unstoreWaitingConversationMessages( conversation_id );
+            }            
+        }else{
+            this._storeWaitingConversationMessages(conversation_id);
+        }
+    }
+
+    updateWaitingMessage( conversation_id:number, prev_id:number, wid:string, status:string ){
         this.waitingMessages[conversation_id][prev_id][wid].status = status;
         this._storeWaitingConversationMessages(conversation_id);
     }
 
-    private _setWaitingMessage( conversation_id:number, prev_id:number, status:string, text?:string, library?:object ): string{
+    setWaitingMessage( conversation_id:number, prev_id:number, status:string, text?:string, library?:object ): string{
         if( !this.waitingMessages[conversation_id][prev_id] ){
             this.waitingMessages[conversation_id][prev_id] = {};
         }
@@ -170,6 +334,15 @@ export class MessagesPaginatorProvider {
         this.waitingMessages[conversation_id][prev_id][id] = { wid:id, text:text, library:library, status:status };
         this._storeWaitingConversationMessages(conversation_id);
         return id;
+    }
+
+    private _isWaitingConversationEmpty( conversation_id: number ){
+        return !Object.keys( this.waitingConversations[conversation_id] )
+            .some( prev_id => !!Object.keys(this.waitingConversations[conversation_id][prev_id]).length );
+    }
+
+    private _unstoreWaitingConversationMessages( conversation_id:number ){
+        this.storage.remove( MessagesPaginatorProvider.wcm_key_prefix+conversation_id );
     }
 
     private _storeWaitingConversationMessages( conversation_id:number ){
@@ -184,43 +357,51 @@ export class MessagesPaginatorProvider {
                         delete(this.wcm_storings[conversation_id]);
                     }
                 });
+
+            if( this.waitingConversations.indexOf(conversation_id) === -1 ){
+                this.waitingConversations.push( conversation_id );
+                this._storeWaitingConversations();
+            }
         }else{
             this.wcm_storings[conversation_id] = 2;
         }
     }
 
     private _getCachedWaitingConversationMessages( conversation_id:number ){
-        if( !this.wcm_promises[conversation_id] ){
-            if( this.waitingMessages[conversation_id] ){
-                this.wcm_promises[conversation_id] = this._getWCM(conversation_id);
-            }else{
-                this.wcm_promises[conversation_id] = this._getCachedWaitingConversations().then(()=>this._getWCM(conversation_id));
-            }
-        }
-        return this.wcm_promises[conversation_id];
-    }
-
-    private _getWCM( conversation_id:number ){
-        return this.storage.get( MessagesPaginatorProvider.wcm_key_prefix+conversation_id )
-            .then( data => {
-                console.log('GET DATA FROM STORE', data); // TO REMOVE...
-                data = data || {};
-                // Clean waiting messages...
-                Object.keys(data).forEach( prev_id => {
-                    Object.keys(data[prev_id]).forEach( wid => {
-                        if( data[prev_id][wid].status === 'sent' ){
-                            delete( data[prev_id][wid]);
-                        }
+        let deferred = _getDeferred();
+        
+        if( this.waitingMessages[conversation_id] ){
+            deferred.resolve();
+        }else if( this.waitingConversations.indexOf(conversation_id) === -1 ){
+            this.waitingMessages[conversation_id] = {};
+            deferred.resolve();
+        }else if( this.wcm_promises[conversation_id] ){
+            return this.wcm_promises[conversation_id];
+        }else{
+            this.wcm_promises[conversation_id] = deferred.promise;
+            this.storage.get( MessagesPaginatorProvider.wcm_key_prefix+conversation_id )
+                .then( data => {
+                    data = data || {};
+                    // Clean waiting messages...
+                    Object.keys(data).forEach( prev_id => {
+                        Object.keys(data[prev_id]).forEach( wid => {
+                            if( data[prev_id][wid].status === 'sent' ){
+                                delete( data[prev_id][wid]);
+                            }
+                        });
                     });
+                    // Set waiting messages.
+                    this.waitingMessages[conversation_id] = data;
+                    delete(this.wcm_promises[conversation_id]);
+                    deferred.resolve();
+                })
+                .catch( ()=> {
+                    this.waitingMessages[conversation_id] = {};
+                    delete(this.wcm_promises[conversation_id]);
+                    deferred.resolve();
                 });
-                // Set waiting messages.
-                this.waitingMessages[conversation_id] = data;
-                delete(this.wcm_promises[conversation_id]);
-            })
-            .catch( ()=> {
-                this.waitingMessages[conversation_id] = {};
-                delete(this.wcm_promises[conversation_id]);
-            });
+        }
+        return deferred.promise;
     }
 
     private _getCachedWaitingConversations(){
@@ -263,11 +444,4 @@ export class MessagesPaginatorProvider {
         // Clear service in memory.
         this.waitingMessages = {};
         this.waitingConversations = [];
-    }
-
-
-    /*clear: function(){
-        service.list = {};
-        storage.removeItem('cml');
     }*/
-}

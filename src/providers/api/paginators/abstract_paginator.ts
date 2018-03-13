@@ -1,3 +1,6 @@
+import { Storage } from '@ionic/storage';
+import { Garbage } from '../services/garbage.provider';
+
 import { Api } from '../services/api.provider';
 import { _getDeferred } from '../../../functions/getDeferred';
 
@@ -13,7 +16,6 @@ export abstract class AbstractPaginator {
     public _order_filter: any;
     public _column_filter: any;
     public _idx_name: string = 'id';
-    public _emptyOnRefresh: boolean = true;
 
     public list: any[] = [];
     public indexes: number[] = [];
@@ -22,12 +24,29 @@ export abstract class AbstractPaginator {
     public cache_size: number = 0;
     public total: number;
 
-    constructor( public name:string, public api: Api ){
-        if( this._emptyOnRefresh ){
-            this.clear();
+    private readyPromise: Promise<any>;
+
+    constructor( public name:string, public api: Api, public garbage:Garbage, public storage: Storage ){
+        this.garbage.register(this);
+        this.ready();
+    }
+
+    ready(){
+        if( !this.readyPromise ){
+            if( this.cache_size ){
+                this.readyPromise = this.storage.get( this.name ).then( data => {
+                    this.list = data || [];
+                    this.initIndexes();
+                });
+            }else{
+                let deferred = _getDeferred();
+                this.readyPromise = deferred.promise;
+                this.list = [];
+                this.initIndexes();
+                deferred.resolve();
+            }
         }
-        this.list = JSON.parse( localStorage.getItem(this.name) || '[]' );
-        this.initIndexes();
+        return this.readyPromise;
     }
 
     outdate(){
@@ -48,35 +67,37 @@ export abstract class AbstractPaginator {
         if( !this.loading ){
             var deferred = _getDeferred();
             promise = deferred.promise;
-            
-            if( !this.list.length ){
-                this.loading = promise;
-                this.api.queue( this._method_get, this._buildGetParams() ).then( result =>{
-                    var data = this.formatResult(result);
-                    this._prependDatas( data );
-                    deferred.resolve( data );
+            this.loading = promise;
+
+            this.ready().then( () => {            
+                if( !this.list.length ){                    
+                    this.api.queue( this._method_get, this._buildGetParams() ).then( result =>{
+                        var data = this.formatResult(result);
+                        this._prependDatas( data );
+                        deferred.resolve( data );
+                        this.loading = undefined;
+                        this.last_update = Date.now();
+                    }, () => {
+                        deferred.reject();
+                        this.loading = undefined;
+                    });
+                    
+                }else if( this.isOutDated() || forceRefresh ){
+                    this.api.queue( this._method_get, this._buildRefreshParams() ).then( result => {
+                        var data = this.formatResult(result);
+                        this._prependDatas( data );
+                        deferred.resolve( data );
+                        this.loading = undefined;
+                        this.last_update = Date.now();
+                    }, () => {
+                        deferred.reject();
+                        this.loading = undefined;
+                    });
+                }else{
+                    deferred.resolve();
                     this.loading = undefined;
-                    this.last_update = Date.now();
-                }, () => {
-                    deferred.reject();
-                    this.loading = undefined;
-                });
-                
-            }else if( this.isOutDated() || forceRefresh ){
-                this.loading = promise;                
-                this.api.queue( this._method_get, this._buildRefreshParams() ).then( result => {
-                    var data = this.formatResult(result);
-                    this._prependDatas( data );
-                    deferred.resolve( data );
-                    this.loading = undefined;
-                    this.last_update = Date.now();
-                }, () => {
-                    deferred.reject();
-                    this.loading = undefined;
-                });
-            }else{
-                deferred.resolve();
-            }
+                }
+            });
         }
         return promise;
     }
@@ -85,15 +106,17 @@ export abstract class AbstractPaginator {
         if( !this.nexting ){
             var deferred = _getDeferred();
             this.nexting = deferred.promise;
-            
-            this.api.queue( this._method_get, this._buildNextParams() ).then( result => {
-                var data = this.formatResult( result );
-                this._appendDatas( data );
-                this.nexting = undefined;
-                deferred.resolve( data );
-            }, () => {
-                this.nexting = undefined;
-                deferred.reject();
+
+            this.ready().then( () => {
+                this.api.queue( this._method_get, this._buildNextParams() ).then( result => {
+                    var data = this.formatResult( result );
+                    this._appendDatas( data );
+                    this.nexting = undefined;
+                    deferred.resolve( data );
+                }, () => {
+                    this.nexting = undefined;
+                    deferred.reject();
+                });
             });
         }
         return this.nexting;
@@ -151,7 +174,7 @@ export abstract class AbstractPaginator {
     updateCache(){
         if( this.cache_size ){
             var cachedDatas = this.list.slice(0, this.cache_size );
-            localStorage.setItem( this.name, JSON.stringify( cachedDatas ) );
+            this.storage.set( this.name, cachedDatas );
         }
     }
 
@@ -224,8 +247,9 @@ export abstract class AbstractPaginator {
     }
 
     clear(): void{
-        localStorage.removeItem( this.name );
+        this.storage.remove( this.name );
         this.list = [];
         this.indexes = [];
+        this.total = undefined;
     }
 }

@@ -32,18 +32,11 @@ export class ConversationPage {
     public users: number[] = [];
     public writer: any;
     public conversation: any;
-    public creationInfos: any;
-    public messagesPaginator: MessagesPaginator;
     public usersLastUnreadId: any = {};
 
     public queuedMessages: any[] = [];
-    public indexes: any[] = [];
-
-    public onKeyboardShow: Subscription;
     public refreshingPromise: Promise<any>;
     public writingTimeout: any;
-
-    
 
     public loadBehaviour: string = 'godown';
     public prevScrollHeight: number;
@@ -51,16 +44,17 @@ export class ConversationPage {
 
 
     // NEW!
+    // Various messages service references
+    public messagesPaginator: MessagesPaginator;
+    // Function reference given to message components (called on message display)
     public onMessageLoaded: any;
-    public hasToCreate: boolean = false;
-    public msg_ids: any[] = [];
-    public msg_data: any = {}
-
+    // PROMISES
     public users_promise: Promise<any>;
-    
+    // FLAGS
     public loadingUsers: boolean = true;
     public loadingConversation: boolean = true;
-
+    public hasToCreate: boolean = false;
+    // LISTENERS...
     private socketListeners: any = {};
     private eventListeners: any = [];
     private subscriptions: Subscription[] = [];
@@ -74,7 +68,7 @@ export class ConversationPage {
 
     private _listenConversationEvents(){
         // Listen to paginator self updates ( When a message is sent the paginator refresh its own list ).
-        this.eventListeners.push( this.events.on('cvn'+this.conversation.id+'.messages.update',this._onRefresh.bind(this)) );
+        this.eventListeners.push( this.events.on('cvn'+this.conversation.id+'.updated',this._onRefresh.bind(this)) );
         // Listen to notification
         this.eventListeners.push( this.events.on('notification::message', ( event )=>{
             let wasTapped = event.data[0],
@@ -117,22 +111,14 @@ export class ConversationPage {
         }
     }
 
-    private _buildMessages( ids ){
-
-        
-
-    }
-
-
-
     private _build( empty?:boolean ){
-        this._buildMessages();
         if( empty ){
             this._createEmptyReadDates();
         }else{
             this._buildReadDates( this.messagesPaginator.list );
         }
 
+        this.hasToCreate = false;
         if( this.loading ){
             this.loading = false;                
             this.cd.markForCheck();
@@ -178,50 +164,21 @@ export class ConversationPage {
     private loadConversation( empty?:boolean ){
         // Set messages paginator & get last messages...
         this.messagesPaginator = this.msgPaginatorProvider.getPaginator(this.conversation.id);
-        // Listen to conversation events...
-        this._listenConversationEvents();
-
-        if( this.network.type === 'none' ){
-            this._build( empty );
-        }else{
-            this.requestConversation( empty ).then(()=>{
-                this._build(empty);
-            }).catch( err => {
-                // DISPLAY AN ERROR
-                console.log('ERR', err);
-            });
-        }
-
-
-        // Get users informations...
-        let p1 = this.loadUsers();
-        // Get messages...
-        let p2 = this.messagesPaginator.get(true).then(()=>{
-            this.cvnService.read( this.conversation.id );
-        });
-        
-        let p3;
-        if( creating ){
-            let deferred = _getDeferred();
-            p3 = deferred.promise;
-            deferred.resolve();
-        }else{
-            // Get conversation users read dates
-            p3 = this.cURD.get([this.conversation.id],true);
-        }
-        // Wait for informations => Loaded! 
-        p1.then(()=>p2.then(()=> p3.then(() => {
-            Array.prototype.unshift.apply(this.indexes , this.messagesPaginator.indexes.slice().reverse() );
-            if( creating ){
-                this._createEmptyReadDates();
+        this.messagesPaginator.ready().then(() => {
+            // Listen to conversation events...
+            this._listenConversationEvents();
+            // Build
+            if( this.network.type === 'none' ){
+                this._build( empty );
             }else{
-                this._buildReadDates( this.messagesPaginator.list );
+                this.requestConversation( empty ).then(()=>{
+                    this._build(empty);
+                }).catch( err => {
+                    // DISPLAY AN ERROR
+                    console.log('ERR', err);
+                });
             }
-            if( this.loading ){
-                this.loading = false;                
-                this.cd.markForCheck();
-            }
-        }))).catch(()=>{ console.log('catch'); });
+        });
     }
 
     loadCreation(){
@@ -262,37 +219,44 @@ export class ConversationPage {
     }
 
     getConversation( id:number ){
-        return this.cvnModel.get([id]).then( () => {
+        let deferred = _getDeferred();
+
+        this.cvnModel.get([id]).then( () => {
             this.conversation = this.cvnModel.list[id].datum;
-            this.loadConversation();
-        }).catch( err => {
+            deferred.resolve();
+        }, err => {
             if( this.network.type === 'none' ){
                 // Schedule another getConversation on reconnect.
                 let subscription;
                 subscription = this.network.onConnect().subscribe(()=> {
                     this.subscriptions.splice( this.subscriptions.indexOf(subscription), 1 );
                     subscription.unsubscribe();
-                    this.getConversation( id );
+                    this.getConversation( id ).then(()=> deferred.resolve());
                 });
                 // Push subcription in list to cancel it if user go back.
                 this.subscriptions.push( subscription );
             }else{
                 // Display an error
                 console.log('ERROR conversation:getConversation', err, id );
+                deferred.reject();
             }
         });
+
+        return deferred.promise;
     }
 
     asyncLoadConversation(){
         return this.cvnService.getUsersConversationId( this.params.get('users') ).then( id => {
             if( id ){
-                this.getConversation( id );
+                this.getConversation( id ).then(()=>{
+                    this.loadConversation();
+                });
             }else{
                 this.loadCreation();
             }
-        }).catch( err =>{
+        }, err => {
             if( this.network.type === 'none' ){
-                // Schedule another asyncLoad on reconnect.
+                // Schedule another asyncLoadConversation on reconnect.
                 let subscription;
                 subscription = this.network.onConnect().subscribe(()=> {
                     this.subscriptions.splice( this.subscriptions.indexOf(subscription), 1 );
@@ -340,57 +304,6 @@ export class ConversationPage {
         }else{
             this.asyncLoadConversation();
         }
-
-
-
-
-
-
-
-
-
-
-
-        
-
-        // Bind scroll on keyboard open...
-        this.onKeyboardShow = this.keyboard.onKeyboardShow().subscribe( ()=>{
-            this.content.scrollTo( 0, this.content.getContentDimensions().scrollHeight );
-        });
-
-        if( !this.conversation ){
-            let users = params.get('users');
-            // Build other people array
-            users.forEach( id => {
-                if( id !== account.session.id ){
-                    this.users.push(id);
-                }
-            });
-            // Try to get conversation !
-            if( this.users.length ){
-                this.cvnService.getUsersConversationId( users ).then( conversation_id => {
-                    if( conversation_id ){
-                        this.cvnModel.get([conversation_id]).then( () => {
-                            this.conversation = this.cvnModel.list[conversation_id].datum;
-                            this.load();
-                        });
-                    }else{
-                        this.creationInfos = { users: this.users };
-                        this.loadVirtualConversation();
-                    }
-                });
-            }else{
-                this.navCtrl.pop();
-            }           
-        }else{
-            // Build other people array
-            this.conversation.users.forEach( id => {
-                if( id !== account.session.id ){
-                    this.users.push(id);
-                }
-            });
-            this.load();
-        }
     }
 
     showSettings( $event ){
@@ -399,60 +312,6 @@ export class ConversationPage {
             ev: $event
         });
     }
-
-    load( creating?:boolean ){            
-        // Set messages paginator & get last messages...
-        this.messagesPaginator = this.msgPaginatorProvider.getPaginator(this.conversation.id);
-        // Listen to paginator self updates ( When a message is sent the paginator refresh its own list ).
-        this.eventListeners.push( this.events.on('cvn'+this.conversation.id+'.messages.update',this._onRefresh.bind(this)) );
-        // Listen to notification
-        this.eventListeners.push( this.events.on('notification::message', ( event )=>{
-            let wasTapped = event.data[0],
-                data = event.data[1];
-            if( !wasTapped ){
-                this._onMessage( data.conversation, data.message );
-            }
-        }) );
-
-        // Listen to websocket
-        this.ws.get().then( socket => {
-            this.socket = socket;
-            this._addSocketListener('ch.message', this._onWSMessage.bind(this) );
-            this._addSocketListener('ch.writing', this._onWSWriting.bind(this) );
-            this._addSocketListener('ch.read', this._onWSRead.bind(this) );
-        });
-        // Get users informations...
-        let p1 = this.loadUsers();
-        // Get messages...
-        let p2 = this.messagesPaginator.get(true).then(()=>{
-            this.cvnService.read( this.conversation.id );
-        });
-        
-        let p3;
-        if( creating ){
-            let deferred = _getDeferred();
-            p3 = deferred.promise;
-            deferred.resolve();
-        }else{
-            // Get conversation users read dates
-            p3 = this.cURD.get([this.conversation.id],true);
-        }
-        // Wait for informations => Loaded! 
-        p1.then(()=>p2.then(()=> p3.then(() => {
-            Array.prototype.unshift.apply(this.indexes , this.messagesPaginator.indexes.slice().reverse() );
-            if( creating ){
-                this._createEmptyReadDates();
-            }else{
-                this._buildReadDates( this.messagesPaginator.list );
-            }
-            if( this.loading ){
-                this.loading = false;                
-                this.cd.markForCheck();
-            }
-        }))).catch(()=>{ console.log('catch'); });
-    }
-
-    
     
     previous( refresher ){
         if( this.messagesPaginator ){
@@ -461,12 +320,9 @@ export class ConversationPage {
             this.prevScrollY = d.scrollTop;
             this.loadBehaviour = 'stay';
 
-            this.messagesPaginator.next().then(()=>{
-                let oldLength = this.indexes.length;
-                // Prepend old messages id in conversation message list.
-                Array.prototype.unshift.apply(this.indexes , this.messagesPaginator.indexes.slice( oldLength ).reverse() );
+            this.messagesPaginator.next().then( data =>{
                 // Build read dates.
-                this._buildReadDates( this.messagesPaginator.list.slice( oldLength ) );
+                this._buildReadDates( data );
                 // Complete refresh & update view.
                 refresher.complete();
                 this.cd.markForCheck();
@@ -496,7 +352,7 @@ export class ConversationPage {
     }
 
     _onMessage( conversation_id, message_id ){
-        if( this.conversation.id === conversation_id && this.indexes.indexOf(message_id) === -1 ){
+        if( this.conversation.id === conversation_id && this.messagesPaginator.indexes.indexOf(message_id) === -1 ){
             if( this.writer ){
                 if( this.writingTimeout ){
                     clearTimeout( this.writingTimeout );
@@ -573,7 +429,7 @@ export class ConversationPage {
                 this._onRefresh();
                 this.cvnService.read( this.conversation.id );
                 if( this.socket ){
-                    this.socket.emit('ch.read', {id: this.conversation.id, users: this.users, message_id: this.indexes[this.indexes.length-1] });
+                    this.socket.emit('ch.read', {id: this.conversation.id, users: this.users, message_id: this.messagesPaginator.indexes[0] });
                 }
             });
             return this.refreshingPromise;
@@ -581,7 +437,6 @@ export class ConversationPage {
     }
 
     _onRefresh(){
-        Array.prototype.push.apply(this.indexes , this.messagesPaginator.indexes.slice( 0, -this.indexes.length ).reverse() );
         this.cd.markForCheck();
     }
 
@@ -622,15 +477,13 @@ export class ConversationPage {
                     promise: true
                 });
                 if( !this.creating ){   
-                    this.creating = this.cvnService.createConversation( this.creationInfos.users.concat([this.account.session.id]), this.creationInfos.name ).then( conversation_id => {
+                    this.creating = this.cvnService.createConversation( this.users.concat([this.account.session.id]), 'Chat' ).then( conversation_id => {
                         let id = parseInt(conversation_id);
                         // Set messages paginator & get last messages...
                         this.messagesPaginator = this.msgPaginatorProvider.getPaginator(id);
                         // Get conversation & reload component. 
-                        this.cvnModel.get([id]).then(()=>{
-                            this.conversation = this.cvnModel.list[id].datum;
-                            this.load();
-                            // Send queued messages
+                        this.getConversation( id ).then( () => {
+                            this.loadConversation( true );
                             this._sendQueue();
                         });
                     });
@@ -650,8 +503,8 @@ export class ConversationPage {
 
     printName(): string{
         if( !this.loadingUsers ){
-            if( (this.conversation||this.creationInfos).name && (this.conversation||this.creationInfos).name !== 'Chat' ){
-                return (this.conversation||this.creationInfos).name.toUpperCase();
+            if( this.conversation && this.conversation.name && this.conversation.name !== 'Chat' ){
+                return this.conversation.name.toUpperCase();
             }else{
                 let name = '', short = this.users.length>1?true:false;
                 this.users.forEach( id => {
@@ -667,7 +520,7 @@ export class ConversationPage {
             if( this.users.length === 1 ){
                 return this.pageModel.list[this.userModel.list[this.users[0]].datum.organization_id].datum.title;
             }else{
-                return (this.conversation||this.creationInfos).users.length+' participants';
+                return (this.users.length+1)+' participants';
             }
         }
     }
@@ -692,8 +545,8 @@ export class ConversationPage {
     }
 
     ngOnDestroy(){
-        this.onKeyboardShow.unsubscribe();
         this._clearSocketListeners();
+        this.subscriptions.forEach( sub => sub.unsubscribe() );
         this.eventListeners.forEach( listenerId => this.events.off(undefined,listenerId) );
     }
 

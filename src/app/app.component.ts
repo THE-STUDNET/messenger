@@ -4,7 +4,7 @@ import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 import { Network } from '@ionic-native/network';
 
-import { Api, Account, NotificationService, ConversationModel } from '../providers/api/api.module';
+import { Api, Account, NotificationService, ConversationModel, Garbage } from '../providers/api/api.module';
 import { Events } from '../providers/events/events.provider';
 import { Hangout } from '../providers/hangout/hangout.provider';
 import { WebSocket } from '../providers/shared/shared.module';
@@ -22,7 +22,7 @@ export class MyApp {
     rootPage:any;
 
     constructor(platform: Platform, public statusBar: StatusBar, splashScreen: SplashScreen, private account: Account,
-        api: Api, private notifications: NotificationService, events: Events, hangout: Hangout, private network:Network,
+        api: Api, garbage:Garbage, private notifications: NotificationService, events: Events, hangout: Hangout, private network:Network,
         private websocket: WebSocket, @Inject('Configuration') private config, cvnModel: ConversationModel ) {
         // When platform is ready, configure plugins & set root page.
         platform.ready().then(() => {
@@ -65,6 +65,8 @@ export class MyApp {
             notifications.unregister();
             // Disconnect from websocket server
             websocket.disconnect();
+            // Clear user datas
+            garbage.clear();
         });
         // When user receive item.starting notification.
         events.on('notification::item.starting', event => {

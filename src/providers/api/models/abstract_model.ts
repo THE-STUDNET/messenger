@@ -1,11 +1,15 @@
 import 'rxjs/add/operator/timeout';
 
+import { Storage } from '@ionic/storage';
+import { Network } from '@ionic-native/network';
+
 import { Api } from '../services/api.provider';
+import { Garbage } from '../services/garbage.provider';
 import { _getDeferred } from '../../../functions/getDeferred';
+import { window } from 'rxjs/operators/window';
 
 export abstract class AbstractModel {
 
-    public _emptyOnRefresh: boolean = true;
     public _req_aborters: any = [];
     public outdated_timeout: number = 1000 * 60 * 5;
     public queue_timeout: number = 50;
@@ -20,29 +24,75 @@ export abstract class AbstractModel {
     public cached: any;
     public queued: {deferred: any,ids: any};
 
-    constructor( public api: Api ) {
-        this.cached = JSON.parse( localStorage.getItem(this.cache_list_name) || '[]');
-        if( this._emptyOnRefresh ){
-            this.clear();
+    private _getCachedPromise: Promise<any>;
+    private _storingCached: number = 0;
+    private _getCachedModelPromises: any = {};
+    private _storingModels: any = {};
+
+    constructor( public api: Api, public storage:Storage, public garbage:Garbage ) {
+        garbage.register( this );
+    }
+
+    private _getCachedList(){
+        if( !this._getCachedPromise ){
+            if( this.cache_size ){
+                this._getCachedPromise = this.storage.ready().then( () =>{ 
+                    return this.storage.get( this.cache_list_name )
+                        .then( data => {
+                            console.log('GET CACHED LIST ?', this.cache_list_name, data);
+                            this.cached = data || [];
+                        },()=>{
+                            this.cached = [];
+                        }); 
+                });
+            }else{
+                let d = _getDeferred();
+                d.resolve();
+                this.cached = [];
+                this._getCachedPromise = d.promise;
+            }
+        }
+        return this._getCachedPromise;
+    }
+
+    private _storeCachedList(){
+        console.log('store?', this.cache_list_name, this.cached );
+        if( this._storingCached === 0 ){
+            this._storingCached = 1;
+            this.storage.set( this.cache_list_name, this.cached ).then(()=>{
+                if( this._storingCached === 2 ){
+                    this._storingCached = 0;
+                    this._storeCachedList();
+                }else{
+                    this._storingCached = 0;
+                }
+            });
+        }else{
+            this._storingCached = 2;
         }
     }
 
+    private _getCachedModel( uid ){
+        if( !this._getCachedModelPromises[uid] ){
+            this._getCachedModelPromises[uid] = this.storage.get( this.cache_model_prefix + uid ).then( data =>{
+                delete( this._getCachedModelPromises[uid] );
+                console.log('get:',this.cache_model_prefix + uid, data);
+                this.list[uid] = data;
+                return data;
+            });
+        }
+        return this._getCachedModelPromises[uid];
+    }
 
     clear(): void{
         this.list = {};
-
-        // ABORT REQUESTS
-        //this._req_aborters.forEach(function(a){ a.resolve(); });
-        //this._req_aborters = [];
-
         // CLEAR CACHED MODELS
         this.cached.forEach(function( uid ){
-            localStorage.removeItem( this.cache_model_prefix+uid );
+            this.storage.remove( this.cache_model_prefix + uid );
         }.bind(this));
-
-        // CLEAR LIST OF CACHED ITEMS
+        // CLEAR LIST OF CACHED MODELS
         this.cached = [];
-        localStorage.removeItem( this.cache_list_name );
+        this.storage.remove( this.cache_list_name );
     }
 
     // CHECK IF A UPDATED DATE IS OUTDATED
@@ -53,12 +103,6 @@ export abstract class AbstractModel {
     // BUILD GET PARAMS
     _buildGetParams( ids ): any{
         return { id: ids };
-    }
-
-    // GET MODEL FROM CACHE
-    _getFromCache( uid ){
-        this.list[uid] = JSON.parse( localStorage.getItem( this.cache_model_prefix + uid ) );
-        return this.list[uid];
     }
 
     _format( d ){
@@ -74,70 +118,83 @@ export abstract class AbstractModel {
 
         this.list[index].datum = datum === null ? null : this._format( datum );
         this.list[index].updated_date = Date.now();
-
         delete( this.list[index].promise );
-
+   
         var cacheIndex = this.cached.indexOf(index);
-
-        if( cacheIndex === -1 && datum !== null ){
-            if( this.cached.length === this.cache_size ){
-                var uid = this.cached.pop();
-                localStorage.removeItem( this.cache_model_prefix + uid );
-            }
-
-            this.cached.unshift(index);
-            localStorage.setItem( this.cache_list_name, JSON.stringify(this.cached) );
-        }else if( cacheIndex !== -1 && datum === null ){
-            this._deleteModelCache(index);
+        if( datum === null ){
+            this._deleteModel(index);
+        }else if( cacheIndex === -1 && this.cache_size ){
+            this._addModelCache( index );
+        }else if( this.cache_size ){
+            this._updateModelCache( index );
         }
+    }
 
-        // SET CACHE
-        this._updateModelCache(index);
+    _addModelCache( index:string ){
+        // Set model in cache
+        this.storage.set( this.cache_model_prefix+index, {
+            updated_date: this.list[index].updated_date,
+            datum: this.list[index].datum
+        });
+        // Update cached list
+        this.cached.unshift( index );
+        if( this.cached.length > this.cache_size ){
+            // Remove item if max number of cached model reached.
+            this.storage.remove( this.cache_model_prefix + this.cached.pop() );
+        }
+        this._storeCachedList();
     }
 
     _updateModelCache( index ){
-        localStorage.setItem( this.cache_model_prefix+index, JSON.stringify({
+        this.storage.set( this.cache_model_prefix+index, {
             updated_date: this.list[index].updated_date,
             datum: this.list[index].datum
-        }));
+        });
     }
 
     _deleteModelCache( _index ){
         var index = _index+'';
-        localStorage.removeItem( this.cache_model_prefix+index );
+        this.storage.remove( this.cache_model_prefix+index  );
 
         var cdx = this.cached.indexOf(index);
         if( cdx !== -1 ){
             this.cached.splice( cdx, 1 );
-            localStorage.setItem( this.cache_list_name, JSON.stringify(this.cached) );
+            this._storeCachedList();
         }
     }
 
     _outdateModel = function( uid ){
-        var model = this._getModel(uid);
-        if( model ){
-            model.updated_date = 0;
-            this._updateModelCache( uid );
-        }
+        this._getCachedList().then(()=>this._getModel(uid).then( data => {
+            if( data ){
+                data.updated_date = 0;
+                if( this.cache_size ){
+                    this._updateModelCache( uid );
+                }
+            }
+        }));
     }
 
     _getModel( _uid ){
-        var uid = _uid+'', model = this.list[uid];
+        var deferred = _getDeferred(),
+            uid = _uid+'';
 
-        if( !model && this.cached.indexOf(uid+'') !== -1 ){
-            model = this._getFromCache( uid );
-        }
+        this._getCachedList().then( () => {
+            if( !this.list[uid] && this.cached.indexOf(uid) !== -1 ){
+                this._getCachedModel( uid ).then( data => deferred.resolve(data) );
+            }else{
+                deferred.resolve( this.list[uid] );
+            }
+        });
 
-        return model;
+        return deferred.promise;
     }
 
     _deleteModel( index ){
-        if( this.list[index] ){
-            delete( this.list[index] );
+        delete( this.list[index] );
+        if( this.cache_size ){
             this._deleteModelCache(index);
         }
     }
-
 
     // TO DO => Timeout management & Maybe separate forced & unforced queue...
     queue( uids: any, force?:boolean, timeout?:number ): Promise<any>{
@@ -157,7 +214,6 @@ export abstract class AbstractModel {
         }else{
             uids.forEach(function(k){ this.queued.ids[k]=null; }.bind(this));
         }
-
         return this.queued.deferred.promise;
     }
 
@@ -167,8 +223,43 @@ export abstract class AbstractModel {
             ids = uids.concat(),
             //outdateds = [],
             promises = [],
+            modelsToGetLeft = uids.length,
             count = -1,
             failed = false,
+            next = function(){
+                modelsToGetLeft--;
+                if( !modelsToGetLeft ){
+                    // IF THERE IS STILL IDS TO REQUEST
+                    if( ids.length ){
+                        var methodDeferred = _getDeferred();
+                        // CREATE & SET MODEL PROMISE
+                        ids.forEach(function( uid ){
+                            if( !this.list[uid] ){
+                                this.list[uid] = {};
+                            }
+                            this.list[uid].promise = methodDeferred.promise;
+                        }.bind(this));
+                        // REQUEST MODELS
+                        this.api.queue( this._method_get, this._buildGetParams(ids) ).then(( d ) => {
+                            Object.keys(d).forEach(( k ) => {
+                                this._setModel( d[k], k);
+                            });
+    
+                            methodDeferred.resolve();
+                        }, function(){
+                            ids.forEach(function( k ){
+                                this._deleteModel( k );
+                            }.bind(this));
+    
+                            methodDeferred.reject( arguments );
+                        }.bind(this));
+    
+                        methodDeferred.promise.then(resolve, fail);
+                    }else{
+                        resolve();
+                    }
+                }
+            }.bind(this),
             resolve = function(){
                 count++;
                 if( count === promises.length ){
@@ -183,10 +274,9 @@ export abstract class AbstractModel {
                 resolve();
             };
 
-        //if( !force ){
-            // CHECK WICH MODEL HAS TO BE REQUESTED
-            uids.forEach(function( uid ){
-                var model = this._getModel( uid );
+        // CHECK WICH MODEL HAS TO BE REQUESTED
+        uids.forEach( uid => {
+            this._getModel( uid ).then( model => {
                 // IF MODEL DATUM EXITS && NOT OUTDATED
                 if( !force && model && model.datum &&
                     !this._isOutDated( model.updated_date, timeout || this.outdated_timeout ) ){
@@ -200,47 +290,10 @@ export abstract class AbstractModel {
                     }
                     ids.splice( ids.indexOf(uid), 1 );
                 }
-            }.bind(this));
-        //}
+                next();
+            });            
+        });        
 
-        // IF THERE IS STILL IDS TO REQUEST
-        if( ids.length ){
-            var methodDeferred = _getDeferred();
-
-            // CREATE & SET MODEL PROMISE
-            ids.forEach(function( uid ){
-                if( !this.list[uid] ){
-                    this.list[uid] = {};
-                }
-                this.list[uid].promise = methodDeferred.promise;
-            }.bind(this));
-
-            // CREATE REQUEST ABORTER.
-            //var a = _getDeferred();
-            //this._req_aborters.push( a );
-
-            // REQUEST MODELS
-            this.api.queue( this._method_get, this._buildGetParams(ids) ).then(( d ) => {
-                // DELETE REQUEST ABORTER.
-                //this._req_aborters.splice( this._req_aborters.indexOf(a) );
-
-                Object.keys(d).forEach(( k ) => {
-                    this._setModel( d[k], k);
-                });
-
-                methodDeferred.resolve();
-            }, function(){
-                ids.forEach(function( k ){
-                    this._deleteModel( k );
-                }.bind(this));
-
-                methodDeferred.reject( arguments );
-            }.bind(this));
-
-            methodDeferred.promise.then(resolve, fail);
-        }else{
-            resolve();
-        }
         return deferred.promise;
     }
 
