@@ -6,7 +6,7 @@
 </div>
 
 <div class="message-container" [class.me]="user.datum.id===account.session.id"
-    [class.sending]="message.promise" [class.error]="message.sendingFailed">
+    [class.sending]="sending" [class.error]="message.failed">
     <div class="author" *ngIf="showAuthor()">
         <div *ngIf="user.datum.id!==account.session.id" class="avatar" 
             [backgroundImg]="user.datum.avatar | dmsUrl: [50,'x',50]">
@@ -18,13 +18,13 @@
         <span class="text">{{ message.text }}</span>
         <span class="hour">{{ message.created_date | date:'shortTime' }}</span>
 
-        <div class="sending-animation" *ngIf="message.promise && !message.sendingFailed">
+        <div class="sending-animation" *ngIf="sending">
             <div></div>
             <div></div>
             <div></div>
         </div>
 
-        <div class="error-text" *ngIf="message.sendingFailed">
+        <div class="error-text" *ngIf="message.failed">
             <span class="i i-alert"></span>
             <span>Tap here to send again</span>
         </div>

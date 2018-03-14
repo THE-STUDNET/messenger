@@ -28,7 +28,7 @@ export class MessagesPaginator extends AbstractPaginator {
     public displayableIndexes: any[] = [];
 
     constructor( public name:string, public api: Api, public garbage:Garbage, public storage:Storage, 
-        public conversation_id:number, public events:Events, public network: Network ){
+        public conversation_id:number, public events:Events, public network: Network, public account:Account ){
         super( 'messages'+conversation_id, api, garbage, storage );
     }
 
@@ -57,31 +57,32 @@ export class MessagesPaginator extends AbstractPaginator {
     _prependDatas( data: any[] ){
         super._prependDatas( data );
         // Update displayable indexes list.
-        var i=0, id, length=data.length;            
-        for(;i<length;i++){
-            id = parseInt( data[i][this._idx_name] );
-            if( this.failedMessages[id] ){
-                Object.keys(this.failedMessages[id]).sort((a,b)=> parseInt(b)-parseInt(a)).forEach( uid => {
-                    this.displayableIndexes.unshift( uid );
-                });
-            }
-            this.displayableIndexes.unshift( id );
-        }        
-    }
-
-    _appendDatas( data: any[] ){
-        super._appendDatas( data );
-        // Update displayable indexes list.
-        var id, i= data.length-1;   
+        var i=data.length-1, id;            
         for(;i>=0;i--){
-            id = parseInt(data[i][this._idx_name]);            
+            id = parseInt( data[i][this._idx_name] );
             this.displayableIndexes.push( id );
             if( this.failedMessages[id] ){
                 Object.keys(this.failedMessages[id]).sort().forEach( uid => { //(a,b)=> parseInt(b)-parseInt(a)
                     this.displayableIndexes.push( uid );
                 });
             }
+        }        
+    }
+
+    _appendDatas( data: any[] ){
+        super._appendDatas( data );
+        // Update displayable indexes list.
+        var id, i=0, length=data.length;   
+        for(;i<length;i++){
+            id = parseInt(data[i][this._idx_name]);
+            if( this.failedMessages[id] ){
+                Object.keys(this.failedMessages[id]).sort((a,b)=> parseInt(b)-parseInt(a)).forEach( uid => {
+                    this.displayableIndexes.push( uid );
+                });
+            }
+            this.displayableIndexes.unshift( id );
         }
+        console.log( this, 'AFTER NEXT');
     }
 
     ready(){
@@ -103,16 +104,19 @@ export class MessagesPaginator extends AbstractPaginator {
             this.sendingMessages.forEach( m => {
                 if( m.id ){
                     let idx = this.indexes.indexOf( m.id );
-                    this._removeSending( idx );
+                    if( idx !== -1 ){
+                        this.removeSending( m );
+                    }
                 }
             });
+            console.log('REFRESH?', this.name +'.updated', this, data );
             // Process event.
             this.events.process( this.name +'.updated', data );
         });
     }
 
     addSending( text?:string, library?:any ){
-        let message = { text:text, library:library, id:undefined };
+        let message = { text:text, library:library, id:undefined, user_id:this.account.session.id };
         this.sendingMessages.push(message);
         this.storage.set( this.name +'.sendings', this.sendingMessages );
         return message;
@@ -135,6 +139,7 @@ export class MessagesPaginator extends AbstractPaginator {
             this.failedMessages[message.prev_id] = {};
         }
         message.uid = message.prev_id + '.'+ Date.now();
+        message.failed = true;
         this.failedMessages[message.prev_id][message.uid] = message;
         this.displayableIndexes.push( message.uid );
         this.storage.set( this.name +'.failed', this.failedMessages );
@@ -167,7 +172,7 @@ export class MessagesPaginator extends AbstractPaginator {
     _send( message ){
         return this.api.send('message.send', {text:message.text, conversation_id:this.conversation_id, library:message.library})
             .then( data => {
-                message.id = data.id;
+                message.id = parseInt(data.message_id);
                 return this.refresh();
             }, err => {
                 if( this.network.type !== 'none' ){
@@ -180,8 +185,26 @@ export class MessagesPaginator extends AbstractPaginator {
 
     _messageFailed( message ){
         this.removeSending( message );
-        this.addFailed({ text:message.text, library:message.library, prev_id: this.indexes[0]} );
+        this.addFailed({ text:message.text, library:message.library, user_id: this.account.session.id, prev_id: this.indexes[0]} );
         this.events.process( this.name + '.updated', [] );
+    }
+
+    getFromIndex( index ){
+        let idx = this.indexes.indexOf( index );
+        if( idx !== -1 ){
+            return this.list[idx];
+        }else{
+            let message;
+            Object.keys(this.failedMessages).some( key => { 
+                return Object.keys(this.failedMessages[key]).some( uid => {
+                    if( uid === index ){
+                        message = this.failedMessages[key][uid];
+                        return true;
+                    }
+                });
+            });
+            return message;
+        }
     }
 
     clear(){
@@ -222,7 +245,7 @@ export class MessagesPaginatorProvider {
 
     getPaginator( conversation_id:number ): MessagesPaginator{
         if( !this.list[conversation_id] ){
-            this.list[conversation_id] = new MessagesPaginator('cvn'+conversation_id, this.api, this.garbage, this.storage, conversation_id, this.events, this.network );
+            this.list[conversation_id] = new MessagesPaginator('cvn'+conversation_id, this.api, this.garbage, this.storage, conversation_id, this.events, this.network, this.account );
         }
         return this.list[conversation_id];
     }

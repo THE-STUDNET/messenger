@@ -35,11 +35,11 @@
     
     <div class="messages" *ngIf="!loading && messagesPaginator">
         <message *ngFor="let message of messagesPaginator.sendingMessages" (tap)="messageTapped(message)"
-            [message]="message" [paginator]="messagesPaginator" [loaded]="onMessageLoaded"></message>
+            [sending]="true" [message]="message" [paginator]="messagesPaginator" [loaded]="onMessageLoaded"></message>
     </div>        
 
     <div class="queued-messages" *ngIf="!loading && (!messagesPaginator || !messagesPaginator.sendingMessages.length)">
-        <message *ngFor="let message of queuedMessages" (tap)="messageTapped(message)"
+        <message *ngFor="let message of queuedMessages" (tap)="messageTapped(message)" [sending]="true"
             [message]="message" [paginator]="messagesPaginator" [loaded]="onMessageLoaded"></message>
     </div>
     

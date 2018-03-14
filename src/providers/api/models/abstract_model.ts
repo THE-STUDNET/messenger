@@ -39,7 +39,6 @@ export abstract class AbstractModel {
                 this._getCachedPromise = this.storage.ready().then( () =>{ 
                     return this.storage.get( this.cache_list_name )
                         .then( data => {
-                            console.log('GET CACHED LIST ?', this.cache_list_name, data);
                             this.cached = data || [];
                         },()=>{
                             this.cached = [];
@@ -56,7 +55,6 @@ export abstract class AbstractModel {
     }
 
     private _storeCachedList(){
-        console.log('store?', this.cache_list_name, this.cached );
         if( this._storingCached === 0 ){
             this._storingCached = 1;
             this.storage.set( this.cache_list_name, this.cached ).then(()=>{
@@ -76,7 +74,6 @@ export abstract class AbstractModel {
         if( !this._getCachedModelPromises[uid] ){
             this._getCachedModelPromises[uid] = this.storage.get( this.cache_model_prefix + uid ).then( data =>{
                 delete( this._getCachedModelPromises[uid] );
-                console.log('get:',this.cache_model_prefix + uid, data);
                 this.list[uid] = data;
                 return data;
             });

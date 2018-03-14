@@ -19,7 +19,7 @@ import { Api } from './services/api.provider';
 import { Garbage } from './services/garbage.provider';
 import { Account } from './services/account.provider';
 import { ConversationService } from './services/conversation.provider';
-import { MessagesPaginatorProvider } from './services/messages.provider';
+import { MessagesPaginatorProvider, MessagesPaginator } from './services/messages.provider';
 
 import { LiveClassesService } from './services/liveclasses.provider';
 import { NotificationService } from './services/notifications.provider';
@@ -73,5 +73,6 @@ export {
     UGMModel,
     UCMModel,
     // Paginators
-    ConversationsPaginator
+    ConversationsPaginator,
+    MessagesPaginator
 };

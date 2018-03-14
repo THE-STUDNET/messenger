@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { Account, UserModel } from '../../providers/api/api.module';
+import { Account, UserModel, MessagesPaginator } from '../../providers/api/api.module';
 import { PipesProvider } from '../../pipes/pipes.provider';
 
 
@@ -12,9 +12,10 @@ import { PipesProvider } from '../../pipes/pipes.provider';
 export class MessageComponent {
     @Input('loaded') loaded: any;
     @Input('messageId') messageId?: any;
-    @Input('paginator') paginator: any;
+    @Input('paginator') paginator: MessagesPaginator;
     @Input('message') message?: any;
     @Input('readIds') readIds?: any;
+    @Input('sending') sending?: boolean;
     public user:any
     public lastReadUsers: number[] = [];
 
@@ -22,7 +23,7 @@ export class MessageComponent {
 
     ngOnChanges(){
         if( this.messageId ){
-            this.message = this.paginator.list[this.paginator.indexes.indexOf(this.messageId)];
+            this.message = this.paginator.getFromIndex(this.messageId);
         }
         if( this.readIds && this.message.user_id === this.account.session.id ){
             this.lastReadUsers.splice( 0, this.lastReadUsers.length );
@@ -36,6 +37,7 @@ export class MessageComponent {
         this.user = this.userModel.list[ this.message.user_id ];  
     }
 
+    // (OK) Return true if we have to day information separator. 
     showPreviousDay(){
         if( this.paginator ){
             let idx = this.paginator.indexes.indexOf( this.message.id );
@@ -49,13 +51,16 @@ export class MessageComponent {
         }
     }
 
+    // (OK) Return true if next displayed message is from another day.
     _isNextMessageADifferentDay(){
         if( this.paginator ){
-            let idx = this.paginator.indexes.indexOf( this.message.id );
-            if( idx !== -1 && idx > 0 ){
-                let nextMessageDate = new Date( this.paginator.list[idx-1].created_date ).getDate(),
-                    messageDate = new Date(this.message.created_date).getDate();
-                return messageDate !== nextMessageDate;
+            let next = this._getNextMessage();
+            if( next && next.created_date ){
+                let current_created_date = this.message.created_date;
+                if( this.message.prev_id ){
+                    current_created_date = this.paginator.getFromIndex( this.message.prev_id ).created_date;
+                }
+                return (new Date(next.created_date)).getDate() !== (new Date(current_created_date)).getDate();
             }
         }
     }
@@ -64,37 +69,63 @@ export class MessageComponent {
         return this.showPreviousDay() || this._isPreviousDifferentAuthor();        
     }
 
+    // (OK) Return true if previous message exist OR is from another user.
     _isPreviousDifferentAuthor(){
-        if( this.showPreviousDay() ){
-
-        }
         if( this.paginator ){
-            if( this.message.sid ){
-                return !(this.paginator.sendings.indexOf(this.message) > 0) && (!this.paginator.list.length || this.paginator.list[0].user_id !== this.account.session.id);
-            }else{
-                let idx = this.paginator.indexes.indexOf( this.message.id );
-                if( idx !== -1 && idx < this.paginator.indexes.length-1 ){
-                    return this.paginator.list[idx+1].user_id !== this.message.user_id;
-                }
-            }
+            let previous = this._getPreviousMessage();
+            return !previous || previous.user_id !== this.message.user_id;
         }
         return true;
     }
 
+    // (OK) Return true if next message is from another user OR if its last conversation displayed message.
     _isNextDifferentAuthor(){
         if( this.paginator ){
-            if( this.message.sid ){
-                return this.paginator.sendings.indexOf(this.message) === this.paginator.sendings.length-1;
+            var next = this._getNextMessage();
+            return !next || this.message.user_id !== next.user_id;
+        }
+        return true;
+    }
+
+    _getNextMessage(){
+        if( this.paginator ){
+            if( this.sending ){
+                let idx = this.paginator.sendingMessages.indexOf(this.message);
+                return this.paginator.sendingMessages[idx+1];
             }else{
-                let idx = this.paginator.indexes.indexOf( this.message.id );
-                if( idx > 0 ){
-                    return this.paginator.list[idx-1].user_id !== this.message.user_id;
-                }else if( idx === 0 && this.message.user_id === this.account.session.id && this.paginator.sendings.length ){
+                let idx = this.paginator.displayableIndexes.indexOf( this.message.id || this.message.uid );
+                if( idx === this.paginator.displayableIndexes.length-1 ){
+                    if( this.paginator.sendingMessages.length ){
+                        return this.paginator.sendingMessages[0];
+                    }
                     return false;
+                }else{
+                    return this.paginator.getFromIndex( this.paginator.displayableIndexes[idx+1] );
                 }
             }
         }
-        return true;
+        return false;
+    }
+
+    _getPreviousMessage(){
+        if( this.paginator ){
+            if( this.sending ){
+                let idx = this.paginator.sendingMessages.indexOf(this.message);
+                if( idx === 0 ){
+                    return this.paginator.getFromIndex( this.paginator.displayableIndexes[this.paginator.displayableIndexes.length-1] );
+                }else{
+                    return this.paginator.sendingMessages[idx-1];
+                }
+            }else{
+                let idx = this.paginator.displayableIndexes.indexOf( this.message.id || this.message.uid );
+                if( idx === 0 ){
+                    return false;
+                }else{
+                    return this.paginator.getFromIndex( this.paginator.displayableIndexes[idx-1] );
+                }
+            }
+        }
+        return false;
     }
 
     _hasNotRoundedBorder(){
@@ -115,9 +146,5 @@ export class MessageComponent {
             this.loaded = undefined;
         }
     }
-    
-    messageTap(){
-        
 
-    }
 }

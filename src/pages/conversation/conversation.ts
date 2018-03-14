@@ -69,6 +69,7 @@ export class ConversationPage {
     private _listenConversationEvents(){
         // Listen to paginator self updates ( When a message is sent the paginator refresh its own list ).
         this.eventListeners.push( this.events.on('cvn'+this.conversation.id+'.updated',this._onRefresh.bind(this)) );
+        console.log('LISTEN TO', 'cvn'+this.conversation.id+'.updated' );
         // Listen to notification
         this.eventListeners.push( this.events.on('notification::message', ( event )=>{
             let wasTapped = event.data[0],
@@ -183,6 +184,8 @@ export class ConversationPage {
 
     loadCreation(){
         this.hasToCreate = true;
+        this.loading = false;
+        this.cd.markForCheck();
         /*this.users_promise.then(()=>{
             this.loadingConversation = false;
             this.cd.markForCheck();
@@ -437,6 +440,7 @@ export class ConversationPage {
     }
 
     _onRefresh(){
+        console.log('REFRESH CVN!');
         this.cd.markForCheck();
     }
 
