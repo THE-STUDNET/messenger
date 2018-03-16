@@ -27,6 +27,7 @@ import { ProfilePage } from '../pages/profile/profile';
 import { NewMessagePage } from '../pages/newMessage/newMessage';
 import { ConversationPage } from '../pages/conversation/conversation';
 import { TermsSignInPage } from '../pages/termsSignIn/termsSignIn';
+import { NewGroupPage } from '../pages/newGroup/newGroup';
 
 // Custom components
 import { LiveClassComponent } from '../components/liveclass/liveclass';
@@ -35,6 +36,7 @@ import { UserResultComponent } from '../components/userResult/userResult';
 import { MessageComponent } from '../components/message/message';
 import { WritingComponent } from '../components/writing/writing';
 import { ConversationPopover } from '../components/conversationPopover/conversationPopover';
+import { AvatarComponent } from '../components/avatar/avatar';
 
 // Directives
 import { BackgroundImgDirective } from '../directives/backgroundImage.directive';
@@ -65,12 +67,14 @@ import { Hangout } from '../providers/hangout/hangout.provider';
         NewMessagePage,
         ConversationPage,
         TermsSignInPage,
+        NewGroupPage,
         // Components
         ConversationComponent,
         UserResultComponent,
         MessageComponent,
         WritingComponent,
         ConversationPopover,
+        AvatarComponent,
         // Directives
         BackgroundImgDirective,
         // OLD
@@ -106,12 +110,14 @@ import { Hangout } from '../providers/hangout/hangout.provider';
         NewMessagePage,
         ConversationPage,
         TermsSignInPage,
+        NewGroupPage,
         // Components
         ConversationComponent,
         UserResultComponent,
         MessageComponent,
         WritingComponent,
         ConversationPopover,
+        AvatarComponent,
         // OLD
         LoginPage,
         LiveClassesPage,

@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { NavController, ToastController } from 'ionic-angular';
+import { ToastController } from 'ionic-angular';
 import { Account } from '../../providers/api/services/account.provider';
 import { ModalService } from '../../providers/shared/shared.module';
 

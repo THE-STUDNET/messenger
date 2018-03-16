@@ -1,0 +1,5 @@
+<div class="avatar" *ngIf="!loading"
+    [backgroundImg]="user.datum.avatar | dmsUrl: size">
+    {{ user.datum | userletter }}
+</div>
+<div class="avatar loading" *ngIf="loading"></div>

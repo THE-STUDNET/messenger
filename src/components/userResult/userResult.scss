@@ -13,12 +13,27 @@ user-result{
         border-bottom: 1px solid $border-clr;
     }
 
-    .i-chevron-right{
+    .i{
         position: absolute;
         top:0;
         right: 2rem;
         font-size: .8rem;
         line-height: 8rem;
+    }
+    .i-checked{ 
+        font-size: 1.4rem; 
+        color: $border-clr;
+    }
+
+    &.selected .i-checked{
+        color: map-get($colors, primary);
+    }
+
+    &.selectable{
+        .i-chevron-right{ display: none; }
+    }
+    &:not(.selectable){
+        .i-checked{ display: none; }
     }
 
     .name{

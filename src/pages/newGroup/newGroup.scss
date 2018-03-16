@@ -1,0 +1,55 @@
+page-newgroup{
+    .noresult{
+        padding: 3rem 2rem;
+        font-weight: 300;
+        text-align: center;
+        font-size: 1.2rem;
+    }
+
+    .loader{
+        height: 9rem;
+    }
+
+    .selected_users{
+        white-space: nowrap;
+        overflow-y: hidden;
+        overflow-x: scroll;
+        background: $background-clr;
+        height: 4rem;
+        border-bottom: 1px solid $border-clr;
+        padding: 0 1rem;
+    }
+
+    .selected_user{
+        height: 4rem;
+        width: 4rem;
+        display: inline-block;
+        position: relative;
+        vertical-align: top;
+
+        .avatar{
+            top:.5rem;
+            left: .5rem;
+            width:3rem;
+            height: 3rem;
+            line-height: 3rem;
+        }
+
+        .i-remove{
+            position: absolute;
+            top: 2.5rem;
+            left: 2.5rem;
+            height: 1.3rem;
+            width: 1.3rem;
+            background: $text-color;
+            border-radius: 50%;
+            font-size: .8rem;
+            text-align: center;
+            line-height: 1.5rem;
+        }
+    }
+
+    ion-footer{
+        padding: .5rem 2rem;
+    }
+}

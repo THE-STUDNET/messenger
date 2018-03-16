@@ -3,8 +3,14 @@
         <div class="top">
             <button class="icon-btn i i-arrow-left"
                 (tap)="back()"></button>
-            <div class="title">NEW MESSAGE</div>
+            <div class="title">NEW GROUP</div>
         </div>
+        <div class="selected_users" *ngIf="selectedUsers.length"><!--
+         --><div *ngFor="let user_id of selectedUsers;" (tap)="tapOnSelected(user_id)" class="selected_user">
+                <avatar [user-id]="user_id"></avatar>
+                <div class="i-remove"></div>
+            </div><!--
+     --></div>
         <div class="search" [class.focused]="focus || subject">
             <input (focus)="focus=true" (blur)="focus=false" type="text" [(ngModel)]="subject" (keyup)="search()" name="subject">
             <button class="icon-btn i i-remove remove" (click)="search('')"></button>
@@ -17,10 +23,6 @@
 </ion-header>
 
 <ion-content>
-    
-    <button *ngIf="!subject" ion-button (tap)="createGroup()" class="bordered">New group</button>
-    <div *ngIf="!subject" class="suggested">Suggested</div>
-
     <div class="loader" *ngIf="abortPromise">
         <ion-spinner></ion-spinner>
     </div>
@@ -31,10 +33,14 @@
 
     <ion-list no-lines>
         <user-result *ngFor="let user_id of results; trackBy: trackByResult" [user-id]="user_id"
-            (tap)="tapOnResult(user_id)"></user-result>
+            (tap)="tapOnResult(user_id)" class="selectable" [class.selected]="isSelected(user_id)"></user-result>
     </ion-list>
 
     <ion-infinite-scroll (ionInfinite)="next($event)" [enabled]="scrollEnabled">
         <ion-infinite-scroll-content></ion-infinite-scroll-content>
     </ion-infinite-scroll>
 </ion-content>
+
+<ion-footer *ngIf="selectedUsers.length">
+    <button ion-button full (tap)="start()">Start</button>
+</ion-footer>

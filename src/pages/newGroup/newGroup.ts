@@ -1,15 +1,15 @@
-import { Component } from '@angular/core';
-import { NavController, ToastController } from 'ionic-angular';
+import { Component, ViewChild } from '@angular/core';
+import { NavController, ToastController, Content } from 'ionic-angular';
 import { Account, Api } from '../../providers/api/api.module';
 import { ConversationPage } from '../conversation/conversation';
-import { NewGroupPage } from '../newGroup/newGroup';
 import { _getDeferred } from '../../functions/getDeferred';
 
 @Component({
-  selector: 'page-newMessage',
-  templateUrl: 'newMessage.html'
+  selector: 'page-newGroup',
+  templateUrl: 'newGroup.html'
 })
-export class NewMessagePage {
+export class NewGroupPage {
+    @ViewChild(Content) content: Content;
 
     private numberPerPage: number = 10;
     private page: number = 1;
@@ -22,6 +22,8 @@ export class NewMessagePage {
     public abortPromise: any;
     public nextAbortPromise: any;
     public scrollEnabled: boolean = true;
+    
+    public selectedUsers: number[] = [];
 
     constructor(public navCtrl: NavController, public toastCtrl: ToastController, public account: Account, public api: Api ) {
         this.search();
@@ -96,19 +98,36 @@ export class NewMessagePage {
     }
 
     tapOnResult( user_id:number ){
-        this.navToUserConversation( [user_id] );
+        let idx = this.selectedUsers.indexOf( user_id );
+        if( idx === -1 ){
+            this.selectedUsers.push(user_id);
+        }else{
+            this.selectedUsers.splice(idx,1);
+        }
+        this.content.resize();
+    }
+
+    tapOnSelected( user_id ){
+        let idx = this.selectedUsers.indexOf( user_id );
+        if( idx !== -1 ){
+            this.selectedUsers.splice(idx,1);
+        }
+        this.content.resize();
+    }
+
+    start(){
+        this.navToUserConversation( this.selectedUsers );
     }
 
     navToUserConversation( users:number[] ){
         this.navCtrl.push(ConversationPage,{users:users});
     }
 
-    createGroup(){
-        this.navCtrl.push(NewGroupPage);
-    }
-
     back(){
-        this.navCtrl.pop();
+        this.navCtrl.popToRoot();
     }
 
+    isSelected( user_id ){
+        return this.selectedUsers.indexOf( user_id ) !== -1;
+    }
 }

@@ -1,0 +1,29 @@
+avatar{    
+    .avatar{
+        border: none;
+        width: 4rem;
+        height: 4rem;
+        line-height: 4rem;
+        font-weight: 600;
+
+        /*&::before{
+            content:" ";
+            bottom: -2px;
+            right: 0;
+            position: absolute;
+            width: .9rem;
+            height: .9rem;
+            border-radius: 50%;
+            border: 2px solid #FFF;
+            background: $disconnected-clr;
+        }
+
+        &.online::before{
+            background: $connected-clr;
+        }*/
+
+        &.loading{
+            background: $loading-gradient-clr;
+        }
+    }
+}
