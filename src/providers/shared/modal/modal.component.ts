@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild, ComponentFactoryResolver } from '@angular/core';
+import { Component, ViewChild, ComponentFactoryResolver } from '@angular/core';
 import { Platform } from 'ionic-angular';
 import { ModalDirective } from './modal.directive';
 import { ModalService } from './modal.provider';

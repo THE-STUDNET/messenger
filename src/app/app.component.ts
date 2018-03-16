@@ -28,7 +28,7 @@ export class MyApp {
         platform.ready().then(() => {
             try{
                 if( platform.is('cordova') ){
-                    statusBar.backgroundColorByHexString( this.network.type==="none"?'#e23c3c':'#999999');
+                    statusBar.backgroundColorByHexString( this.network.type==="none"?'#e23c3c':(account.session.id?'#0B9290':'#999999'));
                     splashScreen.hide();
                     notifications.load();
                 }
@@ -41,7 +41,7 @@ export class MyApp {
             });
 
             this.network.onConnect().subscribe( ()=>{
-                statusBar.backgroundColorByHexString( account.session.id?'#999999':'#0B9290');
+                statusBar.backgroundColorByHexString( account.session.id?'#0B9290':'#999999');
             });
 
             if( account.session.id ){

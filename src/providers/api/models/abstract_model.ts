@@ -1,12 +1,10 @@
 import 'rxjs/add/operator/timeout';
 
 import { Storage } from '@ionic/storage';
-import { Network } from '@ionic-native/network';
 
 import { Api } from '../services/api.provider';
 import { Garbage } from '../services/garbage.provider';
 import { _getDeferred } from '../../../functions/getDeferred';
-import { window } from 'rxjs/operators/window';
 
 export abstract class AbstractModel {
 
@@ -18,7 +16,7 @@ export abstract class AbstractModel {
 
     public cache_model_prefix: string;
     public cache_list_name: string;
-    public cache_size: number = 20;
+    public cache_size: number = 30;
 
     public list: any = {};
     public cached: any;
@@ -27,7 +25,6 @@ export abstract class AbstractModel {
     private _getCachedPromise: Promise<any>;
     private _storingCached: number = 0;
     private _getCachedModelPromises: any = {};
-    private _storingModels: any = {};
 
     constructor( public api: Api, public storage:Storage, public garbage:Garbage ) {
         garbage.register( this );
@@ -40,6 +37,7 @@ export abstract class AbstractModel {
                     return this.storage.get( this.cache_list_name )
                         .then( data => {
                             this.cached = data || [];
+                            console.log('CachedList:'+this.cache_list_name+'=>'+JSON.stringify(this.cached) );
                         },()=>{
                             this.cached = [];
                         }); 
@@ -74,11 +72,36 @@ export abstract class AbstractModel {
         if( !this._getCachedModelPromises[uid] ){
             this._getCachedModelPromises[uid] = this.storage.get( this.cache_model_prefix + uid ).then( data =>{
                 delete( this._getCachedModelPromises[uid] );
+                console.log('Model:'+this.cache_model_prefix+':'+uid );
                 this.list[uid] = data;
                 return data;
             });
         }
         return this._getCachedModelPromises[uid];
+    }
+
+    public checkAndLoadModels( ids ): Promise<any>{
+        let deferred = _getDeferred(),
+            steps = ids.length,
+            next = function(){
+                steps--;
+                if( !steps ){
+                    deferred.resolve();
+                }
+            }.bind(this);
+
+        ids.forEach( id => {
+            this._getModel( id ).then( model => {
+                if( !model ){
+                    console.log('CHECK&LOAD-ERROR:'+this.cache_model_prefix, id, ids );
+                    deferred.reject();
+                }else{
+                    next();
+                }
+            });
+        });
+
+        return deferred.promise;
     }
 
     clear(): void{
@@ -177,8 +200,9 @@ export abstract class AbstractModel {
 
         this._getCachedList().then( () => {
             if( !this.list[uid] && this.cached.indexOf(uid) !== -1 ){
-                this._getCachedModel( uid ).then( data => deferred.resolve(data) );
+                this._getCachedModel( uid ).then( data => { console.log('modelFC:'+this.cache_model_prefix, data); deferred.resolve(data) });
             }else{
+                console.log('model:'+this.cache_model_prefix, this.list[uid]);
                 deferred.resolve( this.list[uid] );
             }
         });

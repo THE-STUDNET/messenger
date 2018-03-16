@@ -70,12 +70,8 @@ export class ConversationComponent {
             // Set conversation.
             this.conversation = this.cvnModel.list[this.id];
             // Build other users
-            this.other_users = [];
-            this.conversation.datum.users.forEach( id => {
-                if( this.account.session.id !== id ){
-                    this.other_users.push(id);
-                }
-            });
+            this.buildOtherUsers(this.conversation.datum.users);
+            // Build unread users
             this.buildUnread();
             // Get users data.
             this.userModel.queue(this.other_users).then(()=>{
@@ -85,9 +81,33 @@ export class ConversationComponent {
     }
 
     onLoadError(){
+        console.log('LOAD CVN ERR', this.network.type);
         if( this.network.type === 'none' ){
+            console.log('LOAD CVN ERR2', this.loading );
+            
+            if( this.loading ){
+                this.cvnModel.checkAndLoadModels([this.id]).then(()=>{
+                    return this.userModel.checkAndLoadModels(this.cvnModel.list[this.id].datum.users).then(()=>{
+                        // Set conversation.
+                        this.conversation = this.cvnModel.list[this.id];
+                        // Build other users
+                        this.buildOtherUsers(this.conversation.datum.users);
+                        // Set loading to false
+                        this.loading = false;
+                    });
+                }).catch(()=>{});
+            }
             this.hasToRefreshConversation = true;
         }
+    }
+
+    buildOtherUsers( users ){
+        this.other_users = [];
+        users.forEach( id => {
+            if( this.account.session.id !== id ){
+                this.other_users.push(id);
+            }
+        });
     }
 
     buildUnread(){

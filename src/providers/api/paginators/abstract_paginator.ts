@@ -24,17 +24,22 @@ export abstract class AbstractPaginator {
     public cache_size: number = 0;
     public total: number;
 
-    private readyPromise: Promise<any>;
+    public readyPromise: Promise<any>;
 
     constructor( public name:string, public api: Api, public garbage:Garbage, public storage: Storage ){
         this.garbage.register(this);
-        this.ready();
     }
 
     ready(){
+        console.log('READY'+this.name+':'+this.cache_size);
+        console.log( this.readyPromise );
         if( !this.readyPromise ){
+            console.log('PROMISE?'+this.name);
             if( this.cache_size ){
+                console.log('getPCACHED'+this.name);
                 this.readyPromise = this.storage.get( this.name ).then( data => {
+                    console.log('PCACHED:'+this.name );
+                    console.log('PCACHED-RES: '+JSON.stringify(data));
                     this.list = data || [];
                     this.initIndexes();
                 });
@@ -247,6 +252,7 @@ export abstract class AbstractPaginator {
     }
 
     clear(): void{
+        console.log('CLEAR:'+this.name);
         this.storage.remove( this.name );
         this.list = [];
         this.indexes = [];

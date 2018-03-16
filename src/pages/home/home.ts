@@ -19,6 +19,7 @@ export class HomePage {
 
     public user: any;
     public hasToRefreshConversations: any;
+    public hasToGetUser: any;
     public loading:boolean = true;
     public socket: any;
     public onMessage: any;
@@ -29,9 +30,11 @@ export class HomePage {
         public conversationsPaginator: ConversationsPaginator, public conversationModel: ConversationModel,
         private ws: WebSocket, private events: Events, private sounds: SoundsManager, private network: Network ) {
             // Get user account informations.
-            userModel.get([account.session.id]).then(()=>{
+            if( userModel.list[account.session.id] && userModel.list[account.session.id].datum ){
                 this.user = userModel.list[account.session.id];
-            }).catch(()=>{});
+            }
+            this._getUser();
+            
             // Get user conversations.
             if( conversationsPaginator.list.length ){
                 this.loading = false;
@@ -51,7 +54,11 @@ export class HomePage {
             this.subscriptions.push( this.network.onConnect().subscribe(()=>{
                 if( this.hasToRefreshConversations ){
                     this.hasToRefreshConversations = false;
-                    this.conversationsPaginator.get(true);
+                    this._refreshConversations();
+                }
+                if( this.hasToGetUser ){
+                    this.hasToGetUser = false;
+                    this._getUser();
                 }
             }) );
         }
@@ -117,7 +124,11 @@ export class HomePage {
     }
 
     ionViewWillEnter(){
-        console.log('network?', this.network.type );
+        console.log('IONWILLENTER');
+        this._refreshConversations();
+    }
+
+    _refreshConversations(){
         if( this.network.type !== 'none' ){
             this.conversationsPaginator.get(true).then( list =>{
                 this._notifyConversations( list );
@@ -128,8 +139,20 @@ export class HomePage {
                 }
             });
         }else{
+            console.log('ION-LAUNCH-PAGINATOR-READY')
+            this.conversationsPaginator.ready().then(()=>{
+                this.loading = false;
+            }).catch(()=>{ console.log('ERR-ON-CVN-READY'); });
             this.hasToRefreshConversations = true;
         }
+    }
+
+    _getUser(){
+        this.userModel.get([this.account.session.id]).then(()=>{
+            this.user = this.userModel.list[this.account.session.id];
+        }).catch(()=>{
+            this.hasToGetUser = true;
+        });
     }
 
     ngOnDestroy(){

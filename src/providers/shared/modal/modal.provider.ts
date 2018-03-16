@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { _getDeferred } from '../../../functions/getDeferred';
 
 @Injectable()
 export class ModalService {
