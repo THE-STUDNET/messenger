@@ -19,7 +19,7 @@
 <ion-content>
     
     <button *ngIf="!subject" ion-button (tap)="createGroup()" class="bordered">New group</button>
-    <div *ngIf="!subject" class="suggested">Suggested</div>
+    <!--<div *ngIf="!subject" class="suggested">Suggested</div>-->
 
     <div class="loader" *ngIf="abortPromise">
         <ion-spinner></ion-spinner>

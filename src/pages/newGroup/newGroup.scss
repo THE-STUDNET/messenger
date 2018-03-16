@@ -11,13 +11,25 @@ page-newgroup{
     }
 
     .selected_users{
+        text-align: center;
         white-space: nowrap;
         overflow-y: hidden;
         overflow-x: scroll;
-        background: $background-clr;
-        height: 4rem;
-        border-bottom: 1px solid $border-clr;
+        height: 4.5rem;
         padding: 0 1rem;
+        margin: 0rem 0 1rem;
+
+        &::after{
+            bottom: 0;
+            position: absolute;
+            display: block;
+            content:" ";
+            font-size: 0;
+            width: calc( 100% - 4rem );
+            left: 2rem;
+            height: 1px;
+            background: $border-clr;
+        }
     }
 
     .selected_user{
@@ -26,6 +38,8 @@ page-newgroup{
         display: inline-block;
         position: relative;
         vertical-align: top;
+        touch-action: pan-x !important;
+        margin: 0 .2rem;
 
         .avatar{
             top:.5rem;
@@ -42,14 +56,24 @@ page-newgroup{
             height: 1.3rem;
             width: 1.3rem;
             background: $text-color;
+            color: #FFF;
             border-radius: 50%;
             font-size: .8rem;
             text-align: center;
-            line-height: 1.5rem;
+            line-height: 1.5rem;    
+            border: 2px solid #FFF;
+            box-sizing: content-box;
         }
+
+        
     }
 
     ion-footer{
-        padding: .5rem 2rem;
+        padding: .5rem 0 1rem;
+
+        button{
+            width: calc( 100% - 4rem );
+            margin: 0 2rem !important;
+        }
     }
 }

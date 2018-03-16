@@ -228,6 +228,26 @@ ion-footer{
         .title{
             padding: 0 .5rem;
         }
+
+        .twolevels{
+            padding: 0 .5rem;
+            flex-grow: 1;
+            text-align: center;
+            &:last-child{
+                margin-right: 4rem;
+            }
+        }
+
+        .lvl1{
+            margin-top:.2rem;
+            line-height: 2rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        .lvl2{
+            line-height: 1.8rem;
+            font-size: 1rem;
+        }
     }
 
     .search{

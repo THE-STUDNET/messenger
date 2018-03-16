@@ -3,14 +3,12 @@
         <div class="top">
             <button class="icon-btn i i-arrow-left"
                 (tap)="back()"></button>
-            <div class="title">NEW GROUP</div>
+            <div class="twolevels">
+                <div class="lvl1">NEW GROUP</div>
+                <div class="lvl2">{{ printSelected() }}</div>
+            </div>
         </div>
-        <div class="selected_users" *ngIf="selectedUsers.length"><!--
-         --><div *ngFor="let user_id of selectedUsers;" (tap)="tapOnSelected(user_id)" class="selected_user">
-                <avatar [user-id]="user_id"></avatar>
-                <div class="i-remove"></div>
-            </div><!--
-     --></div>
+        
         <div class="search" [class.focused]="focus || subject">
             <input (focus)="focus=true" (blur)="focus=false" type="text" [(ngModel)]="subject" (keyup)="search()" name="subject">
             <button class="icon-btn i i-remove remove" (click)="search('')"></button>
@@ -41,6 +39,12 @@
     </ion-infinite-scroll>
 </ion-content>
 
-<ion-footer *ngIf="selectedUsers.length">
-    <button ion-button full (tap)="start()">Start</button>
+<ion-footer>
+    <ion-scroll *ngIf="selectedUsers.length" scrollX="true" class="selected_users"><!--
+    --><div *ngFor="let user_id of selectedUsers;" (tap)="tapOnSelected(user_id)" class="selected_user">
+            <avatar [user-id]="user_id"></avatar>
+            <div class="i-remove"></div>
+        </div><!--
+--></ion-scroll>
+    <button ion-button (tap)="start()">Start</button>
 </ion-footer>

@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { NavController, ToastController, Content } from 'ionic-angular';
+import { NavController, ToastController, Content, Platform } from 'ionic-angular';
 import { Account, Api } from '../../providers/api/api.module';
 import { ConversationPage } from '../conversation/conversation';
 import { _getDeferred } from '../../functions/getDeferred';
@@ -24,9 +24,13 @@ export class NewGroupPage {
     public scrollEnabled: boolean = true;
     
     public selectedUsers: number[] = [];
+    public backListener: any;
 
-    constructor(public navCtrl: NavController, public toastCtrl: ToastController, public account: Account, public api: Api ) {
+    constructor(public navCtrl: NavController, public toastCtrl: ToastController, public account: Account, public api: Api, public platform:Platform ) {
         this.search();
+        this.backListener = this.platform.registerBackButtonAction( () => {
+            this.back();
+        });
     }
 
     search( value?: string ){
@@ -115,8 +119,19 @@ export class NewGroupPage {
         this.content.resize();
     }
 
+    printSelected(){
+        return this.selectedUsers.length?this.selectedUsers.length+' selected':'Add participants';
+    }
+
     start(){
-        this.navToUserConversation( this.selectedUsers );
+        if( this.selectedUsers.length ){
+            this.navToUserConversation( this.selectedUsers );
+        }else{
+            this.toastCtrl.create({
+                message: 'You need to select at least one participant',
+                duration: 3000
+            }).present();
+        }
     }
 
     navToUserConversation( users:number[] ){
@@ -129,5 +144,9 @@ export class NewGroupPage {
 
     isSelected( user_id ){
         return this.selectedUsers.indexOf( user_id ) !== -1;
+    }
+
+    ngOnDestroy(){
+        this.backListener();
     }
 }
