@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectorRef } from '@angular/core';
 import { NavController } from 'ionic-angular';
 import { Account, UserModel, ConversationModel, ConversationUnreadDateModel } from '../../providers/api/api.module';
 import { PipesProvider } from '../../pipes/pipes.provider';
@@ -33,7 +33,7 @@ export class ConversationComponent {
 
     constructor( public navCtrl: NavController, private account:Account, private cvnModel: ConversationModel, 
         public lastUnreadIdModel: ConversationUnreadDateModel, public ws: WebSocket, private network: Network,
-        private userModel:UserModel, public pipesProvider:PipesProvider, public events: Events ) {
+        private userModel:UserModel, public pipesProvider:PipesProvider, public events: Events, public cd:ChangeDetectorRef ) {
 
         ws.get().then( socket => {
             this.socket = socket;
@@ -62,7 +62,7 @@ export class ConversationComponent {
         this.load();
     }
 
-    load(){
+    load(){        
         let p1 = this.lastUnreadIdModel.queue([this.id], true);
         let p2 = this.cvnModel.queue([this.id], true);
         
@@ -81,12 +81,10 @@ export class ConversationComponent {
     }
 
     onLoadError(){
-        console.log('LOAD CVN ERR', this.network.type);
-        if( this.network.type === 'none' ){
-            console.log('LOAD CVN ERR2', this.loading );
-            
+        if( this.network.type === 'none' ){            
             if( this.loading ){
                 this.cvnModel.checkAndLoadModels([this.id]).then(()=>{
+
                     return this.userModel.checkAndLoadModels(this.cvnModel.list[this.id].datum.users).then(()=>{
                         // Set conversation.
                         this.conversation = this.cvnModel.list[this.id];
@@ -94,8 +92,14 @@ export class ConversationComponent {
                         this.buildOtherUsers(this.conversation.datum.users);
                         // Set loading to false
                         this.loading = false;
+                        // Force refresh...
+                        this.cd.markForCheck();
+                    }).catch( e =>{ 
+                        console.log('CATCH CVN CPNT USERS LOAD', e);
                     });
-                }).catch(()=>{});
+                }).catch( e =>{
+                    console.log('CATCH CVN '+this.id+' NOT AVAILABLE', e);
+                });
             }
             this.hasToRefreshConversation = true;
         }

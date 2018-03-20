@@ -10,7 +10,8 @@
             <div class="subtitle">{{ printSubtitle() }}</div>
             <div class="avatars" *ngIf="!loadingUsers">
                 <div *ngFor="let user_id of users" class="avatar" 
-                    [backgroundImg]="userModel.list[user_id].datum.avatar | dmsUrl: [50,'x',50]">
+                    [backgroundImg]="userModel.list[user_id].datum.avatar | dmsUrl: [50,'x',50]"
+                    [biToken]="userModel.list[user_id].datum.avatar+'50'">
                     {{ userModel.list[user_id].datum | userletter }}
                 </div>
             </div>
@@ -29,17 +30,17 @@
 
     <div class="messages" *ngIf="!loading && messagesPaginator">
         <message *ngFor="let messageId of messagesPaginator.displayableIndexes; trackBy trackMessageId;"
-            [messageId]="messageId" [paginator]="messagesPaginator" 
+            [messageId]="messageId" [paginator]="messagesPaginator" (tap)="messageTapped(messageId)"
             [readIds]="usersLastUnreadId" [loaded]="onMessageLoaded"></message>
     </div>
     
     <div class="messages" *ngIf="!loading && messagesPaginator">
-        <message *ngFor="let message of messagesPaginator.sendingMessages" (tap)="messageTapped(message)"
+        <message *ngFor="let message of messagesPaginator.sendingMessages"
             [sending]="true" [message]="message" [paginator]="messagesPaginator" [loaded]="onMessageLoaded"></message>
     </div>        
 
     <div class="queued-messages" *ngIf="!loading && (!messagesPaginator || !messagesPaginator.sendingMessages.length)">
-        <message *ngFor="let message of queuedMessages" (tap)="messageTapped(message)" [sending]="true"
+        <message *ngFor="let message of queuedMessages" [sending]="true"
             [message]="message" [paginator]="messagesPaginator" [loaded]="onMessageLoaded"></message>
     </div>
     

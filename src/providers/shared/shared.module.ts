@@ -6,6 +6,7 @@ import { WebSocket } from './websocket/websocket.provider';
 import { UsersStatus } from './user_status/user_status.provider';
 import { SoundsManager } from './sounds/sounds.provider';
 import { ModalService } from './modal/modal.provider';
+import { FileCache } from './filecache/filecache.provider';
 
 // Components
 import { ModalComponent } from './modal/modal.component';
@@ -37,13 +38,15 @@ export class SharedModule {
                 WebSocket,
                 UsersStatus,
                 SoundsManager,
-                ModalService
+                ModalService,
+                FileCache
             ]
         }
     }
 }
 
 export {
+    FileCache,
     WebSocket,
     UsersStatus,
     SoundsManager,

@@ -31,15 +31,9 @@ export abstract class AbstractPaginator {
     }
 
     ready(){
-        console.log('READY'+this.name+':'+this.cache_size);
-        console.log( this.readyPromise );
         if( !this.readyPromise ){
-            console.log('PROMISE?'+this.name);
             if( this.cache_size ){
-                console.log('getPCACHED'+this.name);
                 this.readyPromise = this.storage.get( this.name ).then( data => {
-                    console.log('PCACHED:'+this.name );
-                    console.log('PCACHED-RES: '+JSON.stringify(data));
                     this.list = data || [];
                     this.initIndexes();
                 });
@@ -252,7 +246,6 @@ export abstract class AbstractPaginator {
     }
 
     clear(): void{
-        console.log('CLEAR:'+this.name);
         this.storage.remove( this.name );
         this.list = [];
         this.indexes = [];

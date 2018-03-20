@@ -12,6 +12,7 @@ import { InAppBrowser } from '@ionic-native/in-app-browser';
 import { NativeAudio } from '@ionic-native/native-audio';
 import { AppAvailability } from '@ionic-native/app-availability';
 import { Network } from '@ionic-native/network';
+import { File } from '@ionic-native/file';
 
 import { MyApp } from './app.component';
 import { LoginPage } from '../pages/login/login';
@@ -37,6 +38,7 @@ import { MessageComponent } from '../components/message/message';
 import { WritingComponent } from '../components/writing/writing';
 import { ConversationPopover } from '../components/conversationPopover/conversationPopover';
 import { AvatarComponent } from '../components/avatar/avatar';
+import { FileComponent } from '../components/file/file';
 
 // Directives
 import { BackgroundImgDirective } from '../directives/backgroundImage.directive';
@@ -75,6 +77,7 @@ import { Hangout } from '../providers/hangout/hangout.provider';
         WritingComponent,
         ConversationPopover,
         AvatarComponent,
+        FileComponent,
         // Directives
         BackgroundImgDirective,
         // OLD
@@ -118,6 +121,7 @@ import { Hangout } from '../providers/hangout/hangout.provider';
         WritingComponent,
         ConversationPopover,
         AvatarComponent,
+        FileComponent,
         // OLD
         LoginPage,
         LiveClassesPage,
@@ -135,6 +139,7 @@ import { Hangout } from '../providers/hangout/hangout.provider';
         NativeAudio,
         AppAvailability,
         Network,
+        File,
         {provide: ErrorHandler, useClass: IonicErrorHandler},
         {provide: "Configuration", useValue: configuration }
     ]

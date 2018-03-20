@@ -124,7 +124,6 @@ export class HomePage {
     }
 
     ionViewWillEnter(){
-        console.log('IONWILLENTER');
         this._refreshConversations();
     }
 
@@ -139,7 +138,6 @@ export class HomePage {
                 }
             });
         }else{
-            console.log('ION-LAUNCH-PAGINATOR-READY')
             this.conversationsPaginator.ready().then(()=>{
                 this.loading = false;
             }).catch(()=>{ console.log('ERR-ON-CVN-READY'); });

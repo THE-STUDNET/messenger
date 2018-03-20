@@ -2,7 +2,8 @@
     <div class="author" *ngIf="_isPreviousDifferentAuthor()">
         <div class="avatar" 
             [userStatus]="[writer.datum.id]"
-            [backgroundImg]="writer.datum.avatar | dmsUrl: [50,'x',50]">
+            [backgroundImg]="writer.datum.avatar | dmsUrl: [50,'x',50]"
+            [biToken]="writer.datum.avatar+'50'">
             {{ writer.datum | userletter }}
         </div>
         <div class="name">{{ writer.datum | username:false:true }}</div>

@@ -16,7 +16,8 @@
         <div *ngIf="!loading">
             <div class="user-info">
                 <div class="avatar" [userStatus]="[user.datum.id]" 
-                    [backgroundImg]="user.datum.avatar | dmsUrl: [100,'x',100]">
+                    [backgroundImg]="user.datum.avatar | dmsUrl: [100,'x',100]"
+                    [biToken]="user.datum.avatar+'100'">
                     {{ user.datum | userletter }}
                 </div>
 

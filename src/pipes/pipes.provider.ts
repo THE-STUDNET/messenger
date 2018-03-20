@@ -58,7 +58,7 @@ export class PipesProvider {
         return initials;
     }
 
-    dmsUrl( token: string, size?:any[] ): string {
+    dmsUrl( token: string, size?:any[], ext?:string ): string {
         if( token ){
             var resize = '';
             if( size && size.length ){
@@ -67,7 +67,7 @@ export class PipesProvider {
             }
             return (token.indexOf('assets/')!==-1||token.indexOf('blob:')!==-1||token.indexOf('http')!==-1)?
                 token:(this.config.dms.protocol?this.config.dms.protocol+':':'')
-                +this.config.dms.base_url+this.config.dms.paths.datas+'/'+token+resize;
+                +this.config.dms.base_url+this.config.dms.paths.datas+'/'+token+resize+(ext?ext:'');
         }
     }
 

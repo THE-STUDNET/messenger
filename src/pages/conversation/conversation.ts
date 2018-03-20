@@ -69,7 +69,6 @@ export class ConversationPage {
     private _listenConversationEvents(){
         // Listen to paginator self updates ( When a message is sent the paginator refresh its own list ).
         this.eventListeners.push( this.events.on('cvn'+this.conversation.id+'.updated',this._onRefresh.bind(this)) );
-        console.log('LISTEN TO', 'cvn'+this.conversation.id+'.updated' );
         // Listen to notification
         this.eventListeners.push( this.events.on('notification::message', ( event )=>{
             let wasTapped = event.data[0],
@@ -165,14 +164,14 @@ export class ConversationPage {
     private loadConversation( empty?:boolean ){
         // Set messages paginator & get last messages...
         this.messagesPaginator = this.msgPaginatorProvider.getPaginator(this.conversation.id);
-        this.messagesPaginator.ready().then(() => {
+        return this.messagesPaginator.ready().then(() => {
             // Listen to conversation events...
             this._listenConversationEvents();
             // Build
             if( this.network.type === 'none' ){
                 this._build( empty );
             }else{
-                this.requestConversation( empty ).then(()=>{
+                return this.requestConversation( empty ).then(()=>{
                     this._build(empty);
                 }).catch( err => {
                     // DISPLAY AN ERROR
@@ -363,7 +362,6 @@ export class ConversationPage {
                     this.writingTimeout = undefined;
                 }
             }
-    
             let promise = this.refresh();
             if( promise ){
                 promise.then(()=>{
@@ -440,7 +438,6 @@ export class ConversationPage {
     }
 
     _onRefresh(){
-        console.log('REFRESH CVN!');
         this.cd.markForCheck();
     }
 
@@ -487,8 +484,9 @@ export class ConversationPage {
                         this.messagesPaginator = this.msgPaginatorProvider.getPaginator(id);
                         // Get conversation & reload component. 
                         this.getConversation( id ).then( () => {
-                            this.loadConversation( true );
-                            this._sendQueue();
+                            this.loadConversation( true ).then(()=>{
+                                this._sendQueue();
+                            });
                         });
                     });
                 }
@@ -537,8 +535,9 @@ export class ConversationPage {
         return id;
     }
 
-    messageTapped( message ){
-        if( message.sendingFailed ){
+    messageTapped( messageId ){
+        let message = this.messagesPaginator.getFromIndex( messageId );
+        if( message.failed ){
             this.loadBehaviour = 'godown';
             this.messagesPaginator.resend( message );
         }

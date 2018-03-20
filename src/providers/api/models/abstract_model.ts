@@ -37,7 +37,6 @@ export abstract class AbstractModel {
                     return this.storage.get( this.cache_list_name )
                         .then( data => {
                             this.cached = data || [];
-                            console.log('CachedList:'+this.cache_list_name+'=>'+JSON.stringify(this.cached) );
                         },()=>{
                             this.cached = [];
                         }); 
@@ -72,36 +71,42 @@ export abstract class AbstractModel {
         if( !this._getCachedModelPromises[uid] ){
             this._getCachedModelPromises[uid] = this.storage.get( this.cache_model_prefix + uid ).then( data =>{
                 delete( this._getCachedModelPromises[uid] );
-                console.log('Model:'+this.cache_model_prefix+':'+uid );
                 this.list[uid] = data;
                 return data;
+            }).catch( e =>{
+                console.log('CATCH STORAGE GET', e);
             });
         }
         return this._getCachedModelPromises[uid];
     }
 
     public checkAndLoadModels( ids ): Promise<any>{
-        let deferred = _getDeferred(),
-            steps = ids.length,
-            next = function(){
-                steps--;
-                if( !steps ){
-                    deferred.resolve();
-                }
-            }.bind(this);
+        try{
+            let deferred = _getDeferred(),
+                steps = ids.length,
+                next = function(){
+                    steps--;
+                    if( !steps ){
+                        deferred.resolve();
+                    }
+                }.bind(this);
 
-        ids.forEach( id => {
-            this._getModel( id ).then( model => {
-                if( !model ){
-                    console.log('CHECK&LOAD-ERROR:'+this.cache_model_prefix, id, ids );
-                    deferred.reject();
-                }else{
-                    next();
-                }
+            ids.forEach( id => {
+                this._getModel( id ).then( model => {
+                    if( !model || !model.datum ){
+                        deferred.reject();
+                    }else{
+                        next();
+                    }
+                }).catch( e =>{
+                    console.log('CATCH GET MODEL IN C&L', e);
+                });
             });
-        });
 
-        return deferred.promise;
+            return deferred.promise;
+        }catch( e ){
+            console.log('CATCH C&L', ids, e );
+        }
     }
 
     clear(): void{
@@ -200,11 +205,14 @@ export abstract class AbstractModel {
 
         this._getCachedList().then( () => {
             if( !this.list[uid] && this.cached.indexOf(uid) !== -1 ){
-                this._getCachedModel( uid ).then( data => { console.log('modelFC:'+this.cache_model_prefix, data); deferred.resolve(data) });
+                this._getCachedModel( uid ).then( data => deferred.resolve(data) ).catch( e=>{
+                    console.log('CATCH GETCACHEDMODEL IN GM', e);
+                });
             }else{
-                console.log('model:'+this.cache_model_prefix, this.list[uid]);
                 deferred.resolve( this.list[uid] );
             }
+        }).catch( e =>{
+            console.log('CATCH GET MODEL', e);
         });
 
         return deferred.promise;
@@ -214,6 +222,12 @@ export abstract class AbstractModel {
         delete( this.list[index] );
         if( this.cache_size ){
             this._deleteModelCache(index);
+        }
+    }
+
+    _deletePromise( index ){
+        if( this.list[index] ){
+            delete( this.list[index].promise );
         }
     }
 
@@ -269,7 +283,7 @@ export abstract class AbstractModel {
                             methodDeferred.resolve();
                         }, function(){
                             ids.forEach(function( k ){
-                                this._deleteModel( k );
+                                this._deletePromise( k );
                             }.bind(this));
     
                             methodDeferred.reject( arguments );
@@ -317,6 +331,4 @@ export abstract class AbstractModel {
 
         return deferred.promise;
     }
-
-
 }

@@ -3,7 +3,8 @@
     
     <div class="avatars" [userStatus]="other_users" [class.two]="other_users.length===2">
         <div *ngFor="let id of other_users.slice(0,2)" class="avatar"
-            [backgroundImg]="userModel.list[id].datum.avatar | dmsUrl: [50,'x',50]">{{ userModel.list[id].datum | userletter }}</div>
+            [backgroundImg]="userModel.list[id].datum.avatar | dmsUrl: [50,'x',50]"
+            [biToken]="userModel.list[id].datum.avatar+'50'">{{ userModel.list[id].datum | userletter }}</div>
         <div class="others" *ngIf="other_users.length > 2">+{{ other_users.length-2 }}</div>
     </div>
         
@@ -14,7 +15,8 @@
 
             <span *ngIf="readCountUsers" class="read-dot">+{{ readCountUsers }}</span>
             <span *ngFor="let id of readAvatarUsers" class="avatar"
-                [backgroundImg]="userModel.list[id].datum.avatar | dmsUrl">{{ userModel.list[id].datum | userletter }}</span>
+                [backgroundImg]="userModel.list[id].datum.avatar | dmsUrl: [50,'x',50]"
+                [biToken]="userModel.list[id].datum.avatar+'50'">{{ userModel.list[id].datum | userletter }}</span>
             <span *ngIf="conversation.datum.message.user_id === account.session.id && !readAvatarUsers.length" 
                 class="sent-dot i-checked"></span>
 

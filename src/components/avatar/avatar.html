@@ -1,5 +1,6 @@
 <div class="avatar" *ngIf="!loading"
-    [backgroundImg]="user.datum.avatar | dmsUrl: size">
+    [backgroundImg]="user.datum.avatar | dmsUrl: size"
+    [biToken]="token">
     {{ user.datum | userletter }}
 </div>
 <div class="avatar loading" *ngIf="loading"></div>

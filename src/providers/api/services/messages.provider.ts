@@ -64,7 +64,16 @@ export class MessagesPaginator extends AbstractPaginator {
                     this.displayableIndexes.push( uid );
                 });
             }
-        }        
+        }
+        // Clean sending messages.
+        this.sendingMessages.forEach( m => {
+            if( m.id ){
+                let idx = this.indexes.indexOf( m.id );
+                if( idx !== -1 ){
+                    this.removeSending( m );
+                }
+            }
+        });
     }
 
     _appendDatas( data: any[] ){
@@ -97,15 +106,6 @@ export class MessagesPaginator extends AbstractPaginator {
 
     refresh(){
         return this.get(true).then( data => {
-            // Clean sending messages.
-            this.sendingMessages.forEach( m => {
-                if( m.id ){
-                    let idx = this.indexes.indexOf( m.id );
-                    if( idx !== -1 ){
-                        this.removeSending( m );
-                    }
-                }
-            });
             // Process event.
             this.events.process( this.name +'.updated', data );
         });

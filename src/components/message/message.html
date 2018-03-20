@@ -9,13 +9,17 @@
     [class.sending]="sending" [class.error]="message.failed">
     <div class="author" *ngIf="showAuthor()">
         <div *ngIf="user.datum.id!==account.session.id" class="avatar" 
-            [backgroundImg]="user.datum.avatar | dmsUrl: [50,'x',50]">
+            [backgroundImg]="user.datum.avatar | dmsUrl: [50,'x',50]"
+            [biToken]="user.datum.avatar+'50'">
             {{ user.datum | userletter }}
         </div>
         <div class="name">{{ user.datum | username:true:true }}</div>
     </div>
-    <div class="message-text" [class.notrounded]="_hasNotRoundedBorder()" (tap)="messageTap()">
-        <span class="text">{{ message.text }}</span>
+    <div class="message-text" [class.notrounded]="_hasNotRoundedBorder()">
+        <span class="text" *ngIf="message.text"  [innerHTML]="message.text | linky"></span>
+
+        <file class="file" *ngIf="message.library" [file]="message.library"></file>
+
         <span class="hour">{{ message.created_date | date:'shortTime' }}</span>
 
         <div class="sending-animation" *ngIf="sending">
@@ -31,7 +35,8 @@
     </div>
     <div class="last-read" *ngIf="lastReadUsers.length">
         <div *ngFor="let id of lastReadUsers" class="avatar" 
-            [backgroundImg]="userModel.list[id].datum.avatar | dmsUrl">
+            [backgroundImg]="userModel.list[id].datum.avatar | dmsUrl"
+            [biToken]="userModel.list[id].datum.avatar+'50'">
             {{ userModel.list[id].datum | userletter }}
         </div>
     </div>

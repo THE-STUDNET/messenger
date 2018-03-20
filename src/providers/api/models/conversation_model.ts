@@ -3,6 +3,7 @@ import { Storage } from '@ionic/storage';
 import { AbstractModel } from './abstract_model';
 import { Api } from '../services/api.provider';
 import { Garbage } from '../services/garbage.provider';
+import { _getDeferred } from '../../../functions/getDeferred';
 
 @Injectable()
 export class ConversationModel extends AbstractModel {

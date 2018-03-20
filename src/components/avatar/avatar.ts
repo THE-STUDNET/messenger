@@ -14,6 +14,7 @@ export class AvatarComponent {
 
     loading: boolean = true;
     public user: any;
+    public token: string;
 
     constructor( private userModel:UserModel, public pipesProvider:PipesProvider ) {}
 
@@ -26,10 +27,12 @@ export class AvatarComponent {
 
         if( this.userModel.list[this.user_id] && this.userModel.list[this.user_id].datum ){
             this.user = this.userModel.list[this.user_id];
+            this.token = this.user.datum.avatar+this.size[0];
             this.loading = false;
         }else{
             this.userModel.queue([this.user_id]).then(()=>{
                 this.user = this.userModel.list[this.user_id];
+                this.token = this.user.datum.avatar+this.size[0];
                 this.loading = false;
             });
         }
