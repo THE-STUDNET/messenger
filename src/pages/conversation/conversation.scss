@@ -65,9 +65,25 @@ page-conversation{
         }
 
         .dta{        
+            margin-left: 3rem;
             .dta-copy, textarea{
                 padding:.7rem 5rem .7rem 2rem;
                 font-size: 1.3rem;
+            }
+        }
+
+        .i-attach{
+            display: block;
+            height: 4rem;
+            position: absolute;
+            color: map-get($colors, primary);
+            top: 0;
+            line-height: 4rem;
+            text-align: center;
+            left: .5rem;
+            &::before{
+                position: relative;
+                top:.3rem;
             }
         }
     }

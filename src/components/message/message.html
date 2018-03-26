@@ -16,7 +16,7 @@
         <div class="name">{{ user.datum | username:true:true }}</div>
     </div>
     <div class="message-text" [class.notrounded]="_hasNotRoundedBorder()">
-        <span class="text" *ngIf="message.text"  [innerHTML]="message.text | linky"></span>
+        <span class="text" *ngIf="message.text">{{ message.text }}</span>
 
         <file class="file" *ngIf="message.library" [file]="message.library"></file>
 

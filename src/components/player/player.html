@@ -1,0 +1,21 @@
+
+
+<div class="player">
+    <video buffered #video (tap)="toggleControls($event)"></video>
+
+    <button class="play i-media" #play
+        (tap)="togglePlay()"></button>
+    
+    <div class="progression">
+        <div class="current-time" #time>-</div>
+        <div class="bar" 
+            (touchstart)="onTouch($event)"
+            (touchmove)="onTouch($event)"
+            (touchend)="onTouch($event)" 
+            (touchleave)="onTouch($event)">
+            <div class="backgroundbar"></div>
+            <div class="position" #position></div>
+        </div>
+        <div class="duration" #duration>-</div>
+    </div>
+</div>

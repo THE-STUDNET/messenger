@@ -1,0 +1,270 @@
+import { Directive, ElementRef, Input } from '@angular/core';
+import { Platform } from 'ionic-angular';
+import { FileCache } from '../providers/shared/shared.module';
+import { _getDeferred } from '../functions/getDeferred';
+
+import { ScreenOrientation } from '@ionic-native/screen-orientation';
+import { Subscription } from 'rxjs/Subscription';
+
+@Directive({
+    selector: '[interactiveImg]'
+})
+export class InteractiveImageDirective {
+
+    @Input('interactiveImg') url: string;
+    @Input('ii-token') token?: string;
+    public prevUrl: string;
+    public finalUrl: any;
+    public loaded: boolean = false;
+
+    public ratio: number = 1;
+    public minRatio: number = 1;
+    public x: number;
+    public y: number;
+    public realwidth: number;
+    public realheight: number;
+    public minWidth: number;
+    public minHeight: number;
+    public content: {top,left,width,height};
+
+    // Touches & event variables...
+    public lastTouch: any;
+    public multiTouch: any = undefined;
+    // Subscriber
+    public orientationSubscription: Subscription;
+
+    constructor( public el: ElementRef, public fileCache: FileCache, public platform: Platform, public orientation: ScreenOrientation ) {
+        el.nativeElement.addEventListener('touchstart', event => this.ontouch(event) );
+        el.nativeElement.addEventListener('touchmove', event => this.onmove(event) );
+        el.nativeElement.addEventListener('touchend', () => this.endtouch() );
+        // touchend  touchleave touchcancel
+        console.log('THIS', this);
+
+        this.orientationSubscription = this.orientation.onChange().subscribe( o => {
+            console.log('ON CHANGE ORIENTATION', o);
+            console.log('type',this.orientation.type);
+
+            setTimeout(()=>{
+                this.setValues();
+                this.setPosition( 0, 0 );
+                this.setStyle();
+            },200);
+        });
+    }
+
+    ngOnChanges(){
+        if( this.url && this.prevUrl !== this.url ){
+            this.prevUrl = this.url;
+
+            this.loaded = false;
+            // Set loading style.
+            this.el.nativeElement.style.backgroundImage = '';
+            this.el.nativeElement.classList.add('background-loading');
+            this.el.nativeElement.classList.remove('background-loaded');
+
+            this.getFinalUrl().then( url => this.load( url ) );
+        }
+    }
+
+    getFinalUrl(): Promise<any>{
+        let deferred = _getDeferred();
+
+        if( this.token && this.platform.is('cordova') ){
+            this.fileCache.getFile( this.token ).then( url => deferred.resolve(url), e => {
+                this.fileCache.createFileFromUrl( this.url, this.token ).then( url => {
+                    deferred.resolve(url)
+                }, () => {
+                    deferred.resolve(this.url);
+                });
+            });
+        }else{
+            deferred.resolve( this.url );
+        }
+
+        return deferred.promise;
+    }
+
+    load( url ){
+        this.finalUrl = url;
+        let img = document.createElement('img');
+        img.onload = () => {
+            this.realheight = img.naturalHeight;
+            this.realwidth = img.naturalWidth;
+            this.displayImage( url );
+        };
+        img.onerror = () => this.displayError();
+        img.src = url;
+    }
+
+    displayImage( url ){
+        this.setValues();
+        this.setPosition( 0, 0 );
+        this.setStyle();
+
+        this.el.nativeElement.style.backgroundImage = 'url("'+url+'")';
+        this.el.nativeElement.style.backgroundRepeat = 'no-repeat';
+        this.el.nativeElement.classList.remove('background-loading');
+        this.el.nativeElement.classList.add('background-loaded');
+    }
+
+    setValues(){
+        let rect = this.el.nativeElement.getBoundingClientRect(),
+            imgRatio = this.realwidth / this.realheight,
+            bgRatio = rect.width / rect.height;
+        // Set content screen positions & dimensions.
+        this.content = {
+            height: rect.height,
+            width: rect.width,
+            top: rect.top,
+            left: rect.left
+        };
+
+        // Calculate min ratio (so image will always cover the element)
+        if( bgRatio < imgRatio ){
+            this.ratio = this.minRatio = 1;
+            this.minWidth = rect.width;
+            this.minHeight = rect.width * this.realheight / this.realwidth;
+        }else{
+            this.ratio = this.minRatio = rect.height * this.realwidth / ( this.realheight * rect.width );
+            this.minHeight = rect.height / this.minRatio;
+            this.minWidth = this.minHeight * this.realwidth / this.realheight;
+        }
+
+        console.log('VALUES', this.content, imgRatio, bgRatio );
+        console.log('min', this.minWidth, this.minHeight,'ct', rect.width, rect.height, 'img', this.realwidth, this.realheight);
+        console.log('RATIO?!', this.ratio, this.minRatio );
+    }
+
+    setZoom( touch ){
+        console.log('SET_TOUCH', touch, this.multiTouch );
+
+        let distance = this._getDistance( touch ),
+            ratio = distance / this.multiTouch.distance;
+
+        console.log('distance:', distance, 'ratio', ratio );
+
+        // Set new ratio...
+        this.ratio = Math.min( Math.max( this.multiTouch.ratio * ratio, this.minRatio ), 4);
+
+        console.log('New RATIO => ', this.ratio );
+
+        // Calculate position...
+        let touchCenter = this._getCenter( this.multiTouch.touch ),
+            futureImageCenterX = ( -this.multiTouch.originalX/2 + touchCenter.x )*this.ratio,
+            futureImageCenterY = ( -this.multiTouch.originalY/2 + touchCenter.y )*this.ratio,
+            futureX = -(futureImageCenterX - this.content.width/2),
+            futureY = -(futureImageCenterY - this.content.height/2);
+        // Set position...
+        this.setPosition( futureX, futureY );
+    }
+
+    setPosition( futureX, futureY ){
+        let futureWidth = this.minWidth * this.ratio,
+            futureHeight = this.minHeight * this.ratio,
+
+            maxX = Math.max( ( this.content.width - futureWidth )/2, 0 ),
+            maxY = Math.max( ( this.content.height - futureHeight )/2, 0 ),
+            minX = futureWidth > this.content.width ? -(futureWidth - this.content.width): maxX,
+            minY = futureHeight > this.content.height ? -(futureHeight - this.content.height): maxY;
+
+        this.x = Math.min( Math.max( Math.round(futureX), minX), maxX );
+        this.y = Math.min( Math.max( Math.round(futureY), minY), maxY );
+        console.log('SET', minX, minY, maxX, maxY, futureX, futureY, this.x, this.y );
+    }
+
+    endtouch(){
+        this.multiTouch = undefined;
+        this.lastTouch = undefined;
+    }
+
+    ontouch( event ){
+        console.log('T', event);
+        // Build touch.
+        let touch = [ this._getTouchPositions(event.touches[0]) ];
+        // If multi touch, set multitouch data (initial ratio & distance between touches) & register the second touch.
+        if( event.touches.length > 1 ){
+            touch.push( this._getTouchPositions(event.touches[1] ) );
+            this.multiTouch = {
+                touch: touch,
+                distance: this._getDistance(touch),
+                ratio: this.ratio,
+                originalX: this.x,
+                originalY: this.y
+            };
+        }
+        // Set last touch
+        this.lastTouch = touch;
+    }
+    // Return center position.
+    _getCenter( touches ){
+        return {
+            x: ( touches[0].x + touches[1].x )/2,
+            y: ( touches[0].y + touches[1].y )/2
+        };
+    }
+    // Return touch position in element referential
+    _getTouchPositions( originalTouch ){
+        return {
+            x: originalTouch.screenX - this.content.left,
+            y: originalTouch.screenY - this.content.top
+        };
+    }
+    // Return distance between 2 touches.
+    _getDistance( touches ){
+        return Math.sqrt( Math.pow(touches[0].x - touches[1].x, 2) + Math.pow(touches[0].y - touches[1].y, 2) );
+    }
+
+    onmove( event ){
+        var touch = [ this._getTouchPositions(event.touches[0]) ];
+        // If there is more than one touch.
+        if( event.touches.length > 1 ){
+            touch.push( this._getTouchPositions(event.touches[1]) );
+            // If user was already multi touching...
+            if( this.multiTouch ){
+                this.setZoom( touch );
+
+            // Else -> init multi touch data.
+            }
+            this.multiTouch = {
+                touch: touch,
+                distance: this._getDistance(touch),
+                ratio: this.ratio,
+                originalX: this.x,
+                originalY: this.y
+            };
+        }else{
+            // Remove multitouch data if any...
+            this.multiTouch = undefined;
+        }
+
+        // If there is another touch -> calculate background position.
+        if( this.lastTouch ){
+            let deltaX, deltaY;
+
+            deltaX = touch[0].x - this.lastTouch[0].x;
+            deltaY = touch[0].y - this.lastTouch[0].y;
+            // If multi touch ( respect second touch movement )
+            if( this.lastTouch.length > 1 && touch.length > 1 ){
+                deltaX = deltaX/2 + (touch[1].x - this.lastTouch[1].x)/2;
+                deltaY = deltaY/2 + (touch[1].y - this.lastTouch[1].y)/2;
+            }
+            this.setPosition( this.x + deltaX, this.y + deltaY );
+        }
+
+        this.lastTouch = touch;
+        this.setStyle();
+    }
+
+    setStyle(){
+        this.el.nativeElement.style.backgroundPositionX = this.x +'px';
+        this.el.nativeElement.style.backgroundPositionY = this.y +'px';
+        this.el.nativeElement.style.backgroundSize = (100*this.ratio)+'%';
+
+        console.log('?WTF', this.x +'px', this.y +'px', (100*this.ratio)+'%' );
+    }
+
+    displayError(){
+        this.el.nativeElement.classList.remove('background-loading');
+        this.el.nativeElement.classList.add('background-error');
+    }
+}

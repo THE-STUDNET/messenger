@@ -58,6 +58,42 @@ export class ConversationPage {
     private socketListeners: any = {};
     private eventListeners: any = [];
     private subscriptions: Subscription[] = [];
+
+
+    sendFile( $event ){
+        if( $event.target.files.length ){
+            let file = $event.target.files[0];
+            this.loadBehaviour = 'godown';
+
+            console.log('FILE CHANGED', $event, file );
+
+            if( this.messagesPaginator ){
+                this.messagesPaginator.send( undefined, file );
+            }else{
+                this.queuedMessages.push({ 
+                    user_id: this.account.session.id, 
+                    text: undefined,
+                    file: file,
+                    created_date: (new Date()).toISOString(),
+                    promise: true
+                });
+
+                if( !this.creating ){   
+                    this.creating = this.cvnService.createConversation( this.users.concat([this.account.session.id]), 'Chat' ).then( conversation_id => {
+                        let id = parseInt(conversation_id);
+                        // Set messages paginator & get last messages...
+                        this.messagesPaginator = this.msgPaginatorProvider.getPaginator(id);
+                        // Get conversation & reload component. 
+                        this.getConversation( id ).then( () => {
+                            this.loadConversation( true ).then(()=>{
+                                this._sendQueue();
+                            });
+                        });
+                    });
+                }
+            }
+        }
+    }
     
     private _listenCommonEvents(){
         // Scroll to conversation bottom when keyboard is opened.
@@ -496,7 +532,7 @@ export class ConversationPage {
 
     private _sendQueue(){
         this.queuedMessages.forEach( message => {
-            this.messagesPaginator.send( message.text );
+            this.messagesPaginator.send( message.text, message.file );
         });
         this.queuedMessages = [];
         // Update UI

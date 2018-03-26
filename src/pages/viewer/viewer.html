@@ -1,0 +1,20 @@
+<ion-content>
+    <div class="shadowhead">
+        <button class="icon-btn i i-arrow-left"
+            (tap)="back()"></button>
+        <div class="title">{{ printTitle() }}</div>
+        <!--<button class="icon-btn i-dots" (click)="showSettings($event)"></button>-->
+    </div>
+    
+    <div class="picture" *ngIf="isPicture()" 
+        [interactiveImg]="current.token | dmsUrl" [ii-token]="current.token"></div>
+
+    <player *ngIf="isVideo()" 
+        [src]="current.token | dmsUrl" 
+        [poster]="current.token | dmsUrl:false:'[50].jpg'"></player>
+
+    <div class="file" *ngIf="isAttachment()">
+        <div class="name">{{ current.name }}</div>
+        <div class="i-upload"></div>
+    </div>
+</ion-content>

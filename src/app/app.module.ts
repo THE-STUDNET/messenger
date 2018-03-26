@@ -13,6 +13,7 @@ import { NativeAudio } from '@ionic-native/native-audio';
 import { AppAvailability } from '@ionic-native/app-availability';
 import { Network } from '@ionic-native/network';
 import { File } from '@ionic-native/file';
+import { ScreenOrientation } from '@ionic-native/screen-orientation';
 
 import { MyApp } from './app.component';
 import { LoginPage } from '../pages/login/login';
@@ -29,6 +30,7 @@ import { NewMessagePage } from '../pages/newMessage/newMessage';
 import { ConversationPage } from '../pages/conversation/conversation';
 import { TermsSignInPage } from '../pages/termsSignIn/termsSignIn';
 import { NewGroupPage } from '../pages/newGroup/newGroup';
+import { ViewerPage } from '../pages/viewer/viewer';
 
 // Custom components
 import { LiveClassComponent } from '../components/liveclass/liveclass';
@@ -39,9 +41,11 @@ import { WritingComponent } from '../components/writing/writing';
 import { ConversationPopover } from '../components/conversationPopover/conversationPopover';
 import { AvatarComponent } from '../components/avatar/avatar';
 import { FileComponent } from '../components/file/file';
+import { PlayerComponent } from '../components/player/player';
 
 // Directives
 import { BackgroundImgDirective } from '../directives/backgroundImage.directive';
+import { InteractiveImageDirective } from '../directives/interactiveImage.directive';
 
 // Pipes
 import { PipesModule } from '../pipes/pipes.module';
@@ -70,6 +74,7 @@ import { Hangout } from '../providers/hangout/hangout.provider';
         ConversationPage,
         TermsSignInPage,
         NewGroupPage,
+        ViewerPage,
         // Components
         ConversationComponent,
         UserResultComponent,
@@ -78,8 +83,10 @@ import { Hangout } from '../providers/hangout/hangout.provider';
         ConversationPopover,
         AvatarComponent,
         FileComponent,
+        PlayerComponent,
         // Directives
         BackgroundImgDirective,
+        InteractiveImageDirective,
         // OLD
         LoginPage,
         LiveClassesPage,
@@ -114,6 +121,7 @@ import { Hangout } from '../providers/hangout/hangout.provider';
         ConversationPage,
         TermsSignInPage,
         NewGroupPage,
+        ViewerPage,
         // Components
         ConversationComponent,
         UserResultComponent,
@@ -122,6 +130,7 @@ import { Hangout } from '../providers/hangout/hangout.provider';
         ConversationPopover,
         AvatarComponent,
         FileComponent,
+        PlayerComponent,
         // OLD
         LoginPage,
         LiveClassesPage,
@@ -140,6 +149,7 @@ import { Hangout } from '../providers/hangout/hangout.provider';
         AppAvailability,
         Network,
         File,
+        ScreenOrientation,
         {provide: ErrorHandler, useClass: IonicErrorHandler},
         {provide: "Configuration", useValue: configuration }
     ]

@@ -158,6 +158,29 @@ export class ConversationComponent {
         return '';
     }
 
+    printFile(){
+        if( this.conversation.datum.message && this.conversation.datum.message.library ){
+            let file = this.conversation.datum.message.library; 
+            return file.name || this._getTypeName(file.type);
+        }
+        return '';
+    }
+
+    fileClassIcon(){
+        return 'i-'+this._getTypeName(this.conversation.datum.message.library.type);
+    }
+
+    _getTypeName( mimetype ){
+        let m = mimetype.slice(0,6);
+        if( m === 'image/' ){
+            return 'picture';
+        }else if( m === 'video/' ){
+            return 'video';
+        }else{
+            return 'document';
+        }
+    }
+
     isUnread(){
         if( this.conversation.datum.message && this.conversation.datum.message.user_id ){
             return this.account.session.id !== this.conversation.datum.message.user_id

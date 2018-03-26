@@ -1,7 +1,6 @@
 import { Component, Input } from '@angular/core';
-import { Account, UserModel } from '../../providers/api/api.module';
-import { PipesProvider } from '../../pipes/pipes.provider';
-
+import { NavController } from 'ionic-angular';
+import { ViewerPage } from '../../pages/viewer/viewer';
 
 @Component({
     selector: 'file',
@@ -10,7 +9,7 @@ import { PipesProvider } from '../../pipes/pipes.provider';
 export class FileComponent {
     @Input('file') file: any;
     
-    constructor(){}
+    constructor( public navCtrl: NavController){}
 
     ngOnChanges(){
         
@@ -28,4 +27,7 @@ export class FileComponent {
         return !this.isPicture() && !this.isVideo();
     }
 
+    displayViewer( users:number[] ){
+        this.navCtrl.push( ViewerPage,{libraries: [this.file] });
+    }
 }

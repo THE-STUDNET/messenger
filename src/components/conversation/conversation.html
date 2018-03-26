@@ -11,7 +11,12 @@
     <div class="conversation-item">
         <div class="name">{{ printName() }}</div>
         <div class="subtitle">
-            <span class="last">{{ printUser() }}{{ conversation.datum.message.text }} </span>
+            <span class="last" *ngIf="conversation.datum.message.text">{{ printUser() }}{{ conversation.datum.message.text }}</span>
+            <span class="last" *ngIf="conversation.datum.message.library">
+                <span>{{ printUser() }}</span>
+                <span [class]="fileClassIcon()"></span>
+                <span>{{ printFile() }}</span>
+            </span>
 
             <span *ngIf="readCountUsers" class="read-dot">+{{ readCountUsers }}</span>
             <span *ngFor="let id of readAvatarUsers" class="avatar"

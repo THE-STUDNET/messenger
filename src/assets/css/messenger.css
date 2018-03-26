@@ -80,3 +80,18 @@
 .i-media:before {
   content: "\6e";
 }
+.i-pause:before {
+  content: "\6f";
+}
+.i-upload:before {
+  content: "\70";
+}
+.i-picture:before {
+  content: "\71";
+}
+.i-video:before {
+  content: "\72";
+}
+.i-document:before {
+  content: "\73";
+}

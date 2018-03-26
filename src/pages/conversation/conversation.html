@@ -51,6 +51,9 @@
 <ion-footer>
 
     <div class="sender">
+
+        <label class="icon-btn i-attach" for="sharefile"></label>
+        <input accept="image/*,video/*" capture type="file" hidden id="sharefile" (change)="sendFile($event)">
         
         <div class="dta">
             <textarea #senderArea placeholder="Say something..." type="text" (input)="onTyping(senderArea)"

@@ -4,9 +4,9 @@ import { Account } from '../providers/api/services/account.provider';
 const days = [
     'Sun.',
     'Mon.',
-    'Tues.',
+    'Tue.',
     'Wed.',
-    'Thurs.',
+    'Thu.',
     'Fri.',
     'Sat.'
 ];
