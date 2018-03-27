@@ -1,12 +1,12 @@
 
-<div class="picture" *ngIf="isPicture()" (tap)="displayViewer()"
+<div class="picture" *ngIf="isPicture()"
     [backgroundImg]="file.token | dmsUrl: [100,'m',100]"
     [biToken]="file.token+'100'"></div>
-<div class="picture" *ngIf="isVideo()" (tap)="displayViewer()"
+<div class="picture" *ngIf="isVideo()"
     [backgroundImg]="file.token | dmsUrl: [100,'m',100]: '[50].jpg'"
     [biToken]="file.token+'100'">
     <div class="i-media"></div>
 </div>
-<div class="file" *ngIf="isAttachment()" (tap)="displayViewer()">
+<div class="file" *ngIf="isAttachment()">
     <span>{{ file.name }}</span>
 </div>

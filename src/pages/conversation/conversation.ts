@@ -12,6 +12,7 @@ import { Account, ConversationModel, UserModel, MessagesPaginatorProvider,
     PageModel, ConversationService, ConversationUnreadDateModel } from '../../providers/api/api.module';
 
 import { ConversationPopover } from '../../components/conversationPopover/conversationPopover';
+import { ViewerPage } from '../viewer/viewer';
 
 import { _getDeferred } from '../../functions/getDeferred';
 
@@ -577,6 +578,22 @@ export class ConversationPage {
             this.loadBehaviour = 'godown';
             this.messagesPaginator.resend( message );
         }
+    }
+
+    fileTapped( messageId ){
+        let libraries = [],
+            index = 0;
+
+        this.messagesPaginator.list.forEach( message => {
+            if( message.library ){
+                libraries.push( Object.assign({ created_date:message.created_date, owner_id: message.user_id }, message.library ));
+                if( message.id === messageId ){
+                    index = libraries.length-1;
+                }
+            }
+        });
+
+        this.navCtrl.push( ViewerPage,{libraries: libraries, current: index });
     }
 
     back(){

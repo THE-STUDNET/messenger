@@ -1,20 +1,32 @@
 <ion-content>
-    <div class="shadowhead">
-        <button class="icon-btn i i-arrow-left"
-            (tap)="back()"></button>
-        <div class="title">{{ printTitle() }}</div>
-        <!--<button class="icon-btn i-dots" (click)="showSettings($event)"></button>-->
-    </div>
-    
-    <div class="picture" *ngIf="isPicture()" 
-        [interactiveImg]="current.token | dmsUrl" [ii-token]="current.token"></div>
 
-    <player *ngIf="isVideo()" 
-        [src]="current.token | dmsUrl" 
-        [poster]="current.token | dmsUrl:false:'[50].jpg'"></player>
+    <ion-slides [initialSlide]="initialIndex" (ionSlideWillChange)="onSliding()">
+        <ion-slide *ngFor="let document of libraries">
+            <div class="shadowhead" [class.hide-controls]="hideControls">
+                <button class="icon-btn i i-arrow-left"
+                    (tap)="back()"></button>
 
-    <div class="file" *ngIf="isAttachment()">
-        <div class="name">{{ current.name }}</div>
-        <div class="i-upload"></div>
-    </div>
+                <div class="twolevels">
+                    <div class="lvl1">{{ userModel.list[document.owner_id].datum | username:false:true }}</div>
+                    <div class="lvl2">{{ document.created_date | date: 'medium' }}</div>
+                </div>
+                <!--<button class="icon-btn i-dots" (click)="showSettings($event)"></button>-->
+            </div>
+            
+            <div class="picture" *ngIf="isPicture(document)" 
+                [interactiveImg]="document.token | dmsUrl" [ii-token]="document.token"
+                (zoomChange)="zoomChange($event)"></div>
+
+            <player *ngIf="isVideo(document)" 
+                [src]="document.token | dmsUrl" [poster]="document.token | dmsUrl:false:'[50].jpg'"
+                (controlDisplay)="onControlDisplay($event)" (playStart)="onPlaying($event)"></player>
+
+            <div class="file" *ngIf="isAttachment(document)">
+                <div class="name">{{ document.name }}</div>
+                <a download class="i-upload" [href]="document.token | dmsUrl"></a>
+                <div class="i-upload" (tap)="download(document.token)"></div>
+            </div>
+        </ion-slide>
+    </ion-slides>
+
 </ion-content>

@@ -1,5 +1,5 @@
-import { Directive, ElementRef, Input } from '@angular/core';
-import { Platform } from 'ionic-angular';
+import { Directive, ElementRef, Input, Output, EventEmitter } from '@angular/core';
+import { Platform, Gesture } from 'ionic-angular';
 import { FileCache } from '../providers/shared/shared.module';
 import { _getDeferred } from '../functions/getDeferred';
 
@@ -13,6 +13,9 @@ export class InteractiveImageDirective {
 
     @Input('interactiveImg') url: string;
     @Input('ii-token') token?: string;
+
+    @Output('zoomChange') zoomEmitter = new EventEmitter<any>();
+
     public prevUrl: string;
     public finalUrl: any;
     public loaded: boolean = false;
@@ -32,24 +35,52 @@ export class InteractiveImageDirective {
     public multiTouch: any = undefined;
     // Subscriber
     public orientationSubscription: Subscription;
+    // Double Tap Gesture
+    public doubleTapGesture: Gesture;    
+
 
     constructor( public el: ElementRef, public fileCache: FileCache, public platform: Platform, public orientation: ScreenOrientation ) {
         el.nativeElement.addEventListener('touchstart', event => this.ontouch(event) );
         el.nativeElement.addEventListener('touchmove', event => this.onmove(event) );
         el.nativeElement.addEventListener('touchend', () => this.endtouch() );
-        // touchend  touchleave touchcancel
-        console.log('THIS', this);
-
+        el.nativeElement.addEventListener('touchleave', () => this.endtouch() );
+        el.nativeElement.addEventListener('touchcancel', () => this.endtouch() );
+        
+        this.doubleTapGesture = new Gesture(this.el.nativeElement);
+        this.doubleTapGesture.listen();
+        this.doubleTapGesture.on('doubletap', () => {
+            if( this.loaded ){
+                if( this.ratio < this.minRatio*2 ){
+                    this._setZoom( this.minRatio*2 );
+                    this.setPosition( -this.minWidth/2, - this.minHeight/2 );
+                }else{
+                    this._setZoom( this.minRatio );                    
+                    this.setPosition( 0, 0 );             
+                }
+                this.setStyle();
+            }
+        });
+        
         this.orientationSubscription = this.orientation.onChange().subscribe( o => {
-            console.log('ON CHANGE ORIENTATION', o);
-            console.log('type',this.orientation.type);
+            this.reset();            
+        });
+    }
 
-            setTimeout(()=>{
+    reset(){
+        setTimeout(()=>{
+            let r = this.el.nativeElement.getBoundingClientRect();
+            if( r.width === this.content.height && r.height === this.content.width ){
                 this.setValues();
                 this.setPosition( 0, 0 );
                 this.setStyle();
-            },200);
-        });
+            }else{
+                this.reset();
+            }
+        },50);
+    }
+
+    ngOnDestroy(){
+        this.doubleTapGesture.destroy();
     }
 
     ngOnChanges(){
@@ -91,6 +122,7 @@ export class InteractiveImageDirective {
             this.realheight = img.naturalHeight;
             this.realwidth = img.naturalWidth;
             this.displayImage( url );
+            this.loaded = true;
         };
         img.onerror = () => this.displayError();
         img.src = url;
@@ -121,14 +153,16 @@ export class InteractiveImageDirective {
 
         // Calculate min ratio (so image will always cover the element)
         if( bgRatio < imgRatio ){
-            this.ratio = this.minRatio = 1;
+            this.minRatio = 1;
             this.minWidth = rect.width;
             this.minHeight = rect.width * this.realheight / this.realwidth;
         }else{
-            this.ratio = this.minRatio = rect.height * this.realwidth / ( this.realheight * rect.width );
+            this.minRatio = rect.height * this.realwidth / ( this.realheight * rect.width );
             this.minHeight = rect.height / this.minRatio;
             this.minWidth = this.minHeight * this.realwidth / this.realheight;
         }
+
+        this._setZoom( this.minRatio );
 
         console.log('VALUES', this.content, imgRatio, bgRatio );
         console.log('min', this.minWidth, this.minHeight,'ct', rect.width, rect.height, 'img', this.realwidth, this.realheight);
@@ -144,7 +178,7 @@ export class InteractiveImageDirective {
         console.log('distance:', distance, 'ratio', ratio );
 
         // Set new ratio...
-        this.ratio = Math.min( Math.max( this.multiTouch.ratio * ratio, this.minRatio ), 4);
+        this._setZoom( this.multiTouch.ratio * ratio );
 
         console.log('New RATIO => ', this.ratio );
 
@@ -156,6 +190,13 @@ export class InteractiveImageDirective {
             futureY = -(futureImageCenterY - this.content.height/2);
         // Set position...
         this.setPosition( futureX, futureY );
+    }
+
+    _setZoom( value ){
+        this.ratio = Math.min( Math.max( value, this.minRatio ), 4);
+        setTimeout( () => {
+            this.zoomEmitter.emit( this.ratio === this.minRatio );
+        });
     }
 
     setPosition( futureX, futureY ){

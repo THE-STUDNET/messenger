@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Account, UserModel, MessagesPaginator } from '../../providers/api/api.module';
 import { PipesProvider } from '../../pipes/pipes.provider';
@@ -10,12 +10,16 @@ import { PipesProvider } from '../../pipes/pipes.provider';
 })
 
 export class MessageComponent {
+    // Inputs ...
     @Input('loaded') loaded: any;
     @Input('messageId') messageId?: any;
     @Input('paginator') paginator: MessagesPaginator;
     @Input('message') message?: any;
     @Input('readIds') readIds?: any;
     @Input('sending') sending?: boolean;
+    // Emitting...
+    @Output('fileTapped') onFileTapped = new EventEmitter<any>();
+
     public user:any
     public lastReadUsers: number[] = [];
 
@@ -35,6 +39,10 @@ export class MessageComponent {
             });
         }
         this.user = this.userModel.list[ this.message.user_id ];  
+    }
+
+    emitFileTapped(){
+        this.onFileTapped.emit();
     }
 
     // (OK) Return true if we have to day information separator. 

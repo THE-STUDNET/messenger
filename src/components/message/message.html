@@ -18,7 +18,7 @@
     <div class="message-text" [class.notrounded]="_hasNotRoundedBorder()">
         <span class="text" *ngIf="message.text">{{ message.text }}</span>
 
-        <file class="file" *ngIf="message.library" [file]="message.library"></file>
+        <file class="file" *ngIf="message.library" [file]="message.library" (tap)="emitFileTapped()"></file>
 
         <span class="hour">{{ message.created_date | date:'shortTime' }}</span>
 

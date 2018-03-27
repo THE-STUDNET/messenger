@@ -1,6 +1,4 @@
 import { Component, Input } from '@angular/core';
-import { NavController } from 'ionic-angular';
-import { ViewerPage } from '../../pages/viewer/viewer';
 
 @Component({
     selector: 'file',
@@ -9,7 +7,7 @@ import { ViewerPage } from '../../pages/viewer/viewer';
 export class FileComponent {
     @Input('file') file: any;
     
-    constructor( public navCtrl: NavController){}
+    constructor(){}
 
     ngOnChanges(){
         
@@ -25,9 +23,5 @@ export class FileComponent {
 
     isAttachment(){
         return !this.isPicture() && !this.isVideo();
-    }
-
-    displayViewer( users:number[] ){
-        this.navCtrl.push( ViewerPage,{libraries: [this.file] });
     }
 }

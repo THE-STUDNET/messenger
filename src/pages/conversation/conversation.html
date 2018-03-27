@@ -30,8 +30,8 @@
 
     <div class="messages" *ngIf="!loading && messagesPaginator">
         <message *ngFor="let messageId of messagesPaginator.displayableIndexes; trackBy trackMessageId;"
-            [messageId]="messageId" [paginator]="messagesPaginator" (tap)="messageTapped(messageId)"
-            [readIds]="usersLastUnreadId" [loaded]="onMessageLoaded"></message>
+            [messageId]="messageId" [paginator]="messagesPaginator" [readIds]="usersLastUnreadId" [loaded]="onMessageLoaded"
+            (tap)="messageTapped(messageId)" (fileTapped)="fileTapped(messageId)"></message>
     </div>
     
     <div class="messages" *ngIf="!loading && messagesPaginator">

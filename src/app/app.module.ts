@@ -13,7 +13,10 @@ import { NativeAudio } from '@ionic-native/native-audio';
 import { AppAvailability } from '@ionic-native/app-availability';
 import { Network } from '@ionic-native/network';
 import { File } from '@ionic-native/file';
+import { FileOpener } from '@ionic-native/file-opener';
+import { FileTransfer } from '@ionic-native/file-transfer';
 import { ScreenOrientation } from '@ionic-native/screen-orientation';
+
 
 import { MyApp } from './app.component';
 import { LoginPage } from '../pages/login/login';
@@ -149,6 +152,8 @@ import { Hangout } from '../providers/hangout/hangout.provider';
         AppAvailability,
         Network,
         File,
+        FileOpener,
+        FileTransfer,
         ScreenOrientation,
         {provide: ErrorHandler, useClass: IonicErrorHandler},
         {provide: "Configuration", useValue: configuration }

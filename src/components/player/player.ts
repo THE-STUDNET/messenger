@@ -1,6 +1,4 @@
-import { Component, Input, ViewChild, ElementRef, SimpleChanges } from '@angular/core';
-import { NavController } from 'ionic-angular';
-import { ViewerPage } from '../../pages/viewer/viewer';
+import { Component, Input, ViewChild, ElementRef, SimpleChanges, Output, EventEmitter } from '@angular/core';
 
 @Component({
     selector: 'player',
@@ -14,6 +12,9 @@ export class PlayerComponent {
     @ViewChild('duration') duration: ElementRef;
     @ViewChild('position') position: ElementRef;
     @ViewChild('play') actionBtn: ElementRef;
+
+    @Output('controlDisplay') displayEmitter = new EventEmitter<boolean>();
+    @Output('playStart') playEmitter = new EventEmitter<PlayerComponent>();
 
     public controlDisplayed: boolean = true;
     public timeoutId:any;
@@ -61,7 +62,6 @@ export class PlayerComponent {
 
     updatePosition(){
         if( this.video.nativeElement.duration ){
-            console.log( parseInt(this.video.nativeElement.currentTime) , parseInt(this.video.nativeElement.duration) , '%?');
             this.position.nativeElement.style.width = (100 * (parseInt(this.video.nativeElement.currentTime) / parseInt(this.video.nativeElement.duration)) )+'%';
         }else{
             this.position.nativeElement.style.width = '0%';
@@ -96,6 +96,7 @@ export class PlayerComponent {
     togglePlay(){
         if( this.video.nativeElement.paused ){
             this.video.nativeElement.play();
+            this.playEmitter.emit( this );
         }else{
             this.video.nativeElement.pause();
         }
@@ -120,6 +121,7 @@ export class PlayerComponent {
     showControls(){
         this.el.nativeElement.classList.remove('hide-controls');
         this.controlDisplayed = true;
+        this.displayEmitter.emit( true );
 
         if( !this.video.nativeElement.paused ){
             this.timeoutId = setTimeout( ()=>{
@@ -136,6 +138,7 @@ export class PlayerComponent {
         this.controlDisplayed = false;
         this.el.nativeElement.classList.add('hide-controls');
         this.timeoutId = undefined;
+        this.displayEmitter.emit( false );
     }
 
     toggleControls(){
