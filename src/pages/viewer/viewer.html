@@ -23,8 +23,11 @@
 
             <div class="file" *ngIf="isAttachment(document)">
                 <div class="name">{{ document.name }}</div>
-                <a download class="i-upload" [href]="document.token | dmsUrl"></a>
-                <div class="i-upload" (tap)="download(document.token)"></div>
+                <!--<a download class="i-upload" [href]="document.token | dmsUrl"></a>-->
+                <div class="i-upload" (tap)="download(document)" *ngIf="!opening"></div>
+                <div class="loader" *ngIf="opening">
+                    <ion-spinner></ion-spinner>
+                </div>
             </div>
         </ion-slide>
     </ion-slides>

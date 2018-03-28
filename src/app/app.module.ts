@@ -14,7 +14,6 @@ import { AppAvailability } from '@ionic-native/app-availability';
 import { Network } from '@ionic-native/network';
 import { File } from '@ionic-native/file';
 import { FileOpener } from '@ionic-native/file-opener';
-import { FileTransfer } from '@ionic-native/file-transfer';
 import { ScreenOrientation } from '@ionic-native/screen-orientation';
 
 
@@ -153,7 +152,6 @@ import { Hangout } from '../providers/hangout/hangout.provider';
         Network,
         File,
         FileOpener,
-        FileTransfer,
         ScreenOrientation,
         {provide: ErrorHandler, useClass: IonicErrorHandler},
         {provide: "Configuration", useValue: configuration }

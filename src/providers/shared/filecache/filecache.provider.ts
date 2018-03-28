@@ -17,11 +17,12 @@ export class FileCache {
         return this.file.checkFile( this.dir, token );
     }
 
-    getFile( token:string ){
+    getFile( token:string, path?:string ){
         return this.tokenIsCached( token ).then( exist => {
             if( exist ){
-                return this.file.resolveDirectoryUrl( this.dir ).then( de => {
+                return this.file.resolveDirectoryUrl( path || this.dir ).then( de => {
                     return this.file.getFile( de, token, {create:false, exclusive:false}).then( fe => {
+                        console.log('GETFILE', fe );
                         return fe.toURL();
                     });
                 });
@@ -31,11 +32,15 @@ export class FileCache {
         });
     }
 
-    createFile( token, blob ){
-        return this.file.writeFile( this.dir, token, blob );
+    checkFile( token, path? ){
+        return this.file.checkFile( path||this.dir, token );
     }
 
-    createFileFromUrl( url:string, token:string ){
+    createFile( token, blob, path? ){
+        return this.file.writeFile( path || this.dir, token, blob );
+    }
+
+    createFileFromUrl( url:string, token:string, path?:string ){
         if( !this.promises[token] ){
             console.log('CREATE FILE FROM URL', url, token);
 
@@ -46,7 +51,8 @@ export class FileCache {
             xhr.responseType = 'blob';
             xhr.onload = () => {
                 let blob = xhr.response;
-                this.createFile( token, blob );
+                console.log('BLOB', blob );
+                this.createFile( token, blob, path );
                 deferred.resolve( URL.createObjectURL(blob) );
                 delete(this.promises[token]);
             }

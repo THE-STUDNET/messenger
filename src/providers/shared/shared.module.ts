@@ -7,6 +7,7 @@ import { UsersStatus } from './user_status/user_status.provider';
 import { SoundsManager } from './sounds/sounds.provider';
 import { ModalService } from './modal/modal.provider';
 import { FileCache } from './filecache/filecache.provider';
+import { Upload } from './upload/upload.provider';
 
 // Components
 import { ModalComponent } from './modal/modal.component';
@@ -39,7 +40,8 @@ export class SharedModule {
                 UsersStatus,
                 SoundsManager,
                 ModalService,
-                FileCache
+                FileCache,
+                Upload
             ]
         }
     }

@@ -1,5 +1,14 @@
 page-viewer{
     
+    .loader{
+        height: 5rem;
+        
+    }
+
+    ion-spinner *{
+        stroke: map-get($colors, primary) !important;
+    }
+
     .scroll-content{
         background: #000;
     }

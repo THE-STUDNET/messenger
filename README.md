@@ -31,3 +31,9 @@ Then just run:
 ```bash
 $ npm run android-apk
 ```
+
+
+## Notes
+
+ - cordova-plugin-cocoapod-support is required on IOS.
+ - (Android) update cordova-plugin-file-opener2 plugin.xml => <framework src="com.android.support:support-v4:27.+" />

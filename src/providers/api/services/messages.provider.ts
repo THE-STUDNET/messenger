@@ -8,6 +8,9 @@ import { AbstractPaginator } from '../paginators/abstract_paginator';
 import { Events } from '../../events/events.module';
 import { Network } from '@ionic-native/network';
 
+import { FileCache } from '../../shared/shared.module';
+import { _getDeferred } from '../../../functions/getDeferred';
+
 export class MessagesPaginator extends AbstractPaginator {
 
     public cache_size:number = 20;
@@ -25,7 +28,7 @@ export class MessagesPaginator extends AbstractPaginator {
 
     public displayableIndexes: any[] = [];
 
-    constructor( public name:string, public api: Api, public garbage:Garbage, public storage:Storage, 
+    constructor( public name:string, public api: Api, public garbage:Garbage, public storage:Storage, public fileCache: FileCache,
         public conversation_id:number, public events:Events, public network: Network, public account:Account ){
         super( 'messages'+conversation_id, api, garbage, storage );
     }
@@ -111,8 +114,25 @@ export class MessagesPaginator extends AbstractPaginator {
         });
     }
 
-    addSending( text?:string, library?:any ){
-        let message = { text:text, library:library, id:undefined, user_id:this.account.session.id };
+    addSending( text?:string, library?:any, file? ){
+        let message = { text:text, library: undefined, id:undefined, user_id:this.account.session.id };
+
+        if( library ){
+            message.library = library;
+
+        }else if( file ){
+            let deferred = _getDeferred();
+            
+            message.library = {
+                name: file.name,
+                type: file.type,
+                file: file
+            };
+
+
+        }
+
+        
         this.sendingMessages.push(message);
         this.storage.set( this.name +'.sendings', this.sendingMessages );
         return message;
@@ -221,7 +241,7 @@ export class MessagesPaginatorProvider {
     public list: any = {};
     public listeners: any[] = [];   
 
-    constructor( public api: Api, public account: Account, public events: Events, 
+    constructor( public api: Api, public account: Account, public events: Events, public fileCache: FileCache,
         public storage: Storage, public garbage:Garbage, public network:Network){            
         //this.listeners.push( this.events.on('message.new', event => this.onNewMessage(event) ) );
         this.garbage.register( this );
@@ -229,7 +249,7 @@ export class MessagesPaginatorProvider {
 
     getPaginator( conversation_id:number ): MessagesPaginator{
         if( !this.list[conversation_id] ){
-            this.list[conversation_id] = new MessagesPaginator('cvn'+conversation_id, this.api, this.garbage, this.storage, conversation_id, this.events, this.network, this.account );
+            this.list[conversation_id] = new MessagesPaginator('cvn'+conversation_id, this.api, this.garbage, this.storage, this.fileCache, conversation_id, this.events, this.network, this.account );
         }
         return this.list[conversation_id];
     }

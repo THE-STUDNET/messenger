@@ -1,14 +1,14 @@
 import { Component, ViewChild } from '@angular/core';
-import { NavController, NavParams, Slides } from 'ionic-angular';
+import { NavController, NavParams, Slides, ToastController } from 'ionic-angular';
 import { InAppBrowser } from '@ionic-native/in-app-browser';
 import { StatusBar } from '@ionic-native/status-bar';
 import { FileOpener } from '@ionic-native/file-opener';
-import { FileTransfer } from '@ionic-native/file-transfer';
 import { File } from '@ionic-native/file';
 
 import { UserModel } from '../../providers/api/api.module';
 import { PipesProvider } from '../../pipes/pipes.provider';
 import { PlayerComponent } from '../../components/player/player';
+import { FileCache } from '../../providers/shared/shared.module';
 
 
 @Component({
@@ -21,12 +21,13 @@ export class ViewerPage {
     public libraries: any[];
     public initialIndex: number;
     public hideControls: boolean = false;
+    public opening: boolean = false;
 
     public currentPlayer: PlayerComponent;
 
     constructor(public navCtrl: NavController, public params:NavParams, private iab: InAppBrowser, 
         public status: StatusBar, public userModel: UserModel, public pipes:PipesProvider,
-        public fileTransfer: FileTransfer, public fileOpener: FileOpener, public file:File ) {
+        public fileOpener: FileOpener, public file:File, public fileCache: FileCache, public toast: ToastController ) {
         // hide status bar!
         this.status.hide();
         // Set libraries 
@@ -60,6 +61,7 @@ export class ViewerPage {
             this.currentPlayer = undefined; 
         }
         this.hideControls = false;
+        this.opening = false;
     }
 
     onPlaying( player ){
@@ -86,18 +88,56 @@ export class ViewerPage {
         this.navCtrl.pop();
     }
 
+    _openDocument( path, type ){
+        this.fileOpener.open( path, type ).then(
+            ()=>{ console.log('file opened!'); this.opening = false; },
+            e=>{ 
+                console.log('openDoc', e);
+                if( e.message.indexOf('File not found') !== -1 ){
+                    setTimeout( ()=>this._openDocument( path, type), 100 );
+                }else{
+                    this.toast.create({
+                        message: 'File downloaded to your application data directory...',
+                        duration: 3000
+                    }).present();
+
+                    this.opening = false;
+                }
+            }
+        );
+    }
+
     download( document ){
         let url = this.pipes.dmsUrl( document.token ),
-            transfer =  this.fileTransfer.create();;
+            name = document.token;
 
-        transfer.download( url, this.file.documentsDirectory + document.token ).then(entry=>{
-            console.log('Download complete!', entry.toUrl() );
+        if( document.name && document.name.match(/.+\..+/) ){
+            name = document.name;
+        }
 
-            this.fileOpener.open( this.file.documentsDirectory + document.token, document.type ).then(
-                ()=>console.log('file opened!'),
-                e=> console.log('file not opening', e)
-            );
+        this.opening = true;
+        this.fileCache.checkFile( name, this.file.externalApplicationStorageDirectory ).then( exist => {
+            if( this.opening ){
+                this._openDocument( this.file.externalApplicationStorageDirectory + name, document.type );
+            }
+        }, e => {
+            if( this.opening ){
+                this.fileCache.createFileFromUrl( url, name, this.file.externalApplicationStorageDirectory ).then( ()=>{
+                    if( this.opening ){                 
+                        this._openDocument( this.file.externalApplicationStorageDirectory + name, document.type );
+                    }
+                }, e => { 
+                    this.opening = false;
+                    console.log( 'Error creating file', e);
+                });
+            }
+        });
 
-        },err => console.log('Download failed', err));
+        /*
+        this.toastCtrl.create({
+            message: this.network.type === 'none' ? 'No internet connection, retry later!':'Sorry, an error occured!',
+            duration: 3000
+        }).present();
+        */
     }
 }
