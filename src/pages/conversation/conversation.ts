@@ -69,14 +69,13 @@ export class ConversationPage {
             console.log('FILE CHANGED', $event, file );
 
             if( this.messagesPaginator ){
-                this.messagesPaginator.send( undefined, file );
+                this.messagesPaginator.send( undefined, undefined, file );
             }else{
                 this.queuedMessages.push({ 
                     user_id: this.account.session.id, 
                     text: undefined,
                     file: file,
-                    created_date: (new Date()).toISOString(),
-                    promise: true
+                    created_date: (new Date()).toISOString()
                 });
 
                 if( !this.creating ){   
@@ -533,7 +532,7 @@ export class ConversationPage {
 
     private _sendQueue(){
         this.queuedMessages.forEach( message => {
-            this.messagesPaginator.send( message.text, message.file );
+            this.messagesPaginator.send( message.text, message.library, message.file );
         });
         this.queuedMessages = [];
         // Update UI

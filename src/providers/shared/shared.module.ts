@@ -53,6 +53,7 @@ export {
     UsersStatus,
     SoundsManager,
     ModalService,
+    Upload,
     ModalComponent,
     NetworkStatusDirective
 };

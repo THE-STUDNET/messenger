@@ -101,7 +101,7 @@ export class InteractiveImageDirective {
         let deferred = _getDeferred();
 
         if( this.token && this.platform.is('cordova') ){
-            this.fileCache.getFile( this.token ).then( url => deferred.resolve(url), e => {
+            this.fileCache.getFile( this.token ).then( entry => deferred.resolve(entry.toURL()), e => {
                 this.fileCache.createFileFromUrl( this.url, this.token ).then( url => {
                     deferred.resolve(url)
                 }, () => {

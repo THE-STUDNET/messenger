@@ -1,58 +1,81 @@
 import { Injectable, Inject } from '@angular/core';
-import { _getDeferred } from '../../../functions/getDeferred';
-
-var deferred: any = _getDeferred();
+import { Observable } from 'rxjs/Observable';
+import { FileCache } from '../filecache/filecache.provider';
 
 @Injectable()
 export class Upload {
-    public upload_path = this.config.dms.protocol+this.config.dms.base_url+this.config.dms.paths.upload;
+    public upload_path = this.config.dms.protocol+':'+this.config.dms.base_url+this.config.dms.paths.upload;
 
-    constructor( @Inject('Configuration') public config ) {}
+    constructor( @Inject('Configuration') public config, public fileCache: FileCache ) {}
 
+    //retry(  )
 
-    upload( name, fileOrBlob, filename ){
-        var xhr = new XMLHttpRequest(),
-            deferred = _getDeferred(),
-            formData = new FormData();
+    send( fileOrBlob, filename ){
+        const observers = [];
 
+        let xhr = new XMLHttpRequest(),
+            formData = new FormData(),
+            upload = new Observable( observer => {
+                observers.push( observer );
+
+                console.log('SUBSCRIBE?', observers);
+
+                if( observers.length === 1 ){
+                    xhr.send( formData );
+                }
+
+                return {
+                    unsubscribe( abort?:boolean ){
+                        observers.splice(observers.indexOf(observer), 1);
+                        if( abort ){
+                            xhr.abort();
+                        }
+                    }
+                }
+            });
+            
+        console.log('BUILD?');
+            
         // Set formData file
         if( filename ){
-            formData.append( name, fileOrBlob, filename);
+            formData.append( 'token', fileOrBlob, filename);
         }else{
-            formData.append( name, fileOrBlob);
+            formData.append( 'token', fileOrBlob);
         }
 
         // Init request.
         xhr.open('POST', this.upload_path );
         //xhr.responseType = 'json';
 
-        xhr.upload.addEventListener('progress', function(evt){
-            deferred.notify(evt);
+        xhr.upload.addEventListener('progress', evt => {
+            observers.forEach( observer => observer.next({progress: Math.round(1000 * evt.loaded / evt.total)/10,token:undefined}) );
         });
 
-        xhr.addEventListener('abort',function(evt){
-            deferred.reject(evt);
+        xhr.addEventListener('abort', evt => {
+            observers.forEach( observer => observer.error(evt) );
         });
 
-        xhr.addEventListener('error',function(evt){
-            deferred.reject(evt);
+        xhr.addEventListener('error', evt => {
+            observers.forEach( observer => observer.error(evt) );
         });
 
-        xhr.addEventListener('load',function(evt){
-            var responseObject = {};
+        xhr.addEventListener('load', evt => {
+            var responseObject = {token:undefined};
             try{
                 responseObject = JSON.parse( xhr.response );
             }catch( e ){
-                deferred.reject(evt);
+                observers.forEach( observer => observer.error(evt) );
                 console.log('XHR RESPONSE IS NOT CORRECT JSON', e);
             }
-            deferred.resolve( responseObject );
+
+            observers.forEach( observer => {
+                observer.next({ progress:100, token: responseObject.token });
+                observer.complete();
+            });
         });
 
-        // Send request
-        xhr.send(formData);
 
-        return {xhr:xhr, promise: deferred.promise};
+        return {xhr:xhr, observable: upload };
     }
 
 }

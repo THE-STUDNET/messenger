@@ -21,10 +21,10 @@ export class FileCache {
         return this.tokenIsCached( token ).then( exist => {
             if( exist ){
                 return this.file.resolveDirectoryUrl( path || this.dir ).then( de => {
-                    return this.file.getFile( de, token, {create:false, exclusive:false}).then( fe => {
+                    return this.file.getFile( de, token, {create:false, exclusive:false});/*.then( fe => {
                         console.log('GETFILE', fe );
                         return fe.toURL();
-                    });
+                    });*/
                 });
             }else{
                 throw exist;
@@ -38,6 +38,10 @@ export class FileCache {
 
     createFile( token, blob, path? ){
         return this.file.writeFile( path || this.dir, token, blob );
+    }
+
+    removeFile( token, path? ){
+        return this.file.removeFile( path||this.dir, token );
     }
 
     createFileFromUrl( url:string, token:string, path?:string ){

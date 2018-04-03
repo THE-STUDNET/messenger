@@ -8,7 +8,7 @@ import { AbstractPaginator } from '../paginators/abstract_paginator';
 import { Events } from '../../events/events.module';
 import { Network } from '@ionic-native/network';
 
-import { FileCache } from '../../shared/shared.module';
+import { FileCache, Upload } from '../../shared/shared.module';
 import { _getDeferred } from '../../../functions/getDeferred';
 
 export class MessagesPaginator extends AbstractPaginator {
@@ -28,8 +28,8 @@ export class MessagesPaginator extends AbstractPaginator {
 
     public displayableIndexes: any[] = [];
 
-    constructor( public name:string, public api: Api, public garbage:Garbage, public storage:Storage, public fileCache: FileCache,
-        public conversation_id:number, public events:Events, public network: Network, public account:Account ){
+    constructor( public name:string, public api: Api, public garbage:Garbage, public storage:Storage, public upload: Upload,
+        public conversation_id:number, public events:Events, public network: Network, public account:Account, public fileCache: FileCache ){
         super( 'messages'+conversation_id, api, garbage, storage );
     }
 
@@ -98,6 +98,7 @@ export class MessagesPaginator extends AbstractPaginator {
         if( !this.messageReadyPromise ){
             let sendingPromise = this.storage.get( this.name+'.sendings' ).then( data => {
                 this.sendingMessages = data || [];
+                console.log('GET SENDINGS', data );
             });
             let failedPromise = this.storage.get( this.name + '.failed' ).then( data => {
                 this.failedMessages = data || {};
@@ -114,25 +115,17 @@ export class MessagesPaginator extends AbstractPaginator {
         });
     }
 
-    addSending( text?:string, library?:any, file? ){
-        let message = { text:text, library: undefined, id:undefined, user_id:this.account.session.id };
+    addSending( text?:string, library?:object, file? ){
+        let message = { text:text, library: library, id:undefined, user_id:this.account.session.id };
 
-        if( library ){
-            message.library = library;
-
-        }else if( file ){
-            let deferred = _getDeferred();
-            
+        if( file ){    
             message.library = {
                 name: file.name,
                 type: file.type,
                 file: file
             };
-
-
         }
 
-        
         this.sendingMessages.push(message);
         this.storage.set( this.name +'.sendings', this.sendingMessages );
         return message;
@@ -178,14 +171,14 @@ export class MessagesPaginator extends AbstractPaginator {
         return this.send( message.text, message.library );
     }
 
-    send( text?:string, library?:object ){
+    send( text?:string, library?:object, file? ){
         // Register message.
-        let message = this.addSending( text, library );
+        let message = this.addSending( text, library, file );
         // Send message.
-        this._send(message);
+        this._send(message);        
     }
 
-    _send( message ){
+    _sendToAPI( message ){
         return this.api.send('message.send', {text:message.text, conversation_id:this.conversation_id, library:message.library})
             .then( data => {
                 message.id = parseInt(data.message_id);
@@ -197,6 +190,58 @@ export class MessagesPaginator extends AbstractPaginator {
                     return this._messageFailed( message );
                 }
             });
+    }
+
+    _sendFile( message, file, name ){
+        let upload = this.upload.send( file, name );
+
+        upload.observable.subscribe( data => {
+            message.progress = data.progress;
+            if( data.token ){
+                message.progress = 100;
+                message.library.token = data.token;
+                // DELETING TEMP FILE
+                message.file = undefined;
+                //this.fileCache.removeFile( message.library.name );
+                // UPDATE SENDINGS IN CACHE
+                this.storage.set( this.name +'.sendings', this.sendingMessages );
+                // SEND MESSAGE TO API.
+                this._sendToAPI( message );
+            }
+        }, event => {
+            console.log('UPLOAD ERR', event);
+        });
+    }
+
+    _send( message ){
+        if( message.library ){
+            if( message.library.file && message.library.file instanceof File ){
+                //this.fileCache.createFile( message.library.name, message.library.file ).then( ()=>{
+                    this._sendFile( message, message.library.file, message.library.name );
+                //});
+            }else{
+                this.fileCache.getFile( message.library.name ).then( entry => {
+                    entry.file( file => {
+                        this._sendFile( message, file, message.library.name );
+                    }, e => console.log('ERR GET FILE REF FROM ENTRY', e));
+                }, e => console.log('ERR GET SENDING FILE', e));
+            }
+        }else{
+            this._sendToAPI( message );
+        }
+
+        /*
+        return this.api.send('message.send', {text:message.text, conversation_id:this.conversation_id, library:message.library})
+            .then( data => {
+                message.id = parseInt(data.message_id);
+                return this.refresh();
+            }, err => {
+                if( this.network.type !== 'none' ){
+                    return this._send( message );
+                }else{
+                    return this._messageFailed( message );
+                }
+            });*/
     }
 
     _messageFailed( message ){
@@ -241,15 +286,15 @@ export class MessagesPaginatorProvider {
     public list: any = {};
     public listeners: any[] = [];   
 
-    constructor( public api: Api, public account: Account, public events: Events, public fileCache: FileCache,
-        public storage: Storage, public garbage:Garbage, public network:Network){            
+    constructor( public api: Api, public account: Account, public events: Events, public upload: Upload,
+        public storage: Storage, public garbage:Garbage, public network:Network, public fileCache: FileCache){            
         //this.listeners.push( this.events.on('message.new', event => this.onNewMessage(event) ) );
         this.garbage.register( this );
     }
 
     getPaginator( conversation_id:number ): MessagesPaginator{
         if( !this.list[conversation_id] ){
-            this.list[conversation_id] = new MessagesPaginator('cvn'+conversation_id, this.api, this.garbage, this.storage, this.fileCache, conversation_id, this.events, this.network, this.account );
+            this.list[conversation_id] = new MessagesPaginator('cvn'+conversation_id, this.api, this.garbage, this.storage, this.upload, conversation_id, this.events, this.network, this.account, this.fileCache );
         }
         return this.list[conversation_id];
     }

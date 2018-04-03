@@ -32,9 +32,9 @@ export class BackgroundImgDirective {
     }
 
     getImage(){
-        this.fileCache.getFile( this.token ).then( url => {
-            if( url ){
-                this.displayImage(url);
+        this.fileCache.getFile( this.token ).then( entry => {
+            if( entry ){
+                this.displayImage(entry.toURL());
             }else{
                 this.fileCache.createFileFromUrl( this.url, this.token ).then( url => {
                     this.displayImage(url);
