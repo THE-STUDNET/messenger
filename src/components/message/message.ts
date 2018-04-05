@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Account, UserModel, MessagesPaginator } from '../../providers/api/api.module';
 import { PipesProvider } from '../../pipes/pipes.provider';
@@ -23,7 +23,7 @@ export class MessageComponent {
     public user:any
     public lastReadUsers: number[] = [];
 
-    constructor( public account:Account, public userModel:UserModel, public pipesProvider:PipesProvider ) {}
+    constructor( public account:Account, public userModel:UserModel, public pipesProvider:PipesProvider, public cd: ChangeDetectorRef ) {}
 
     ngOnChanges(){
         if( this.messageId ){
@@ -38,7 +38,22 @@ export class MessageComponent {
                 }
             });
         }
+        if( this.message.upload ){
+            this.message.upload.observable.subscribe( data => {
+                console.log('MSG PROGRESS', data.progress);
+                this.message.progress = data.progress+'%';
+                this.cd.markForCheck();
+            }, event => {});
+        }
         this.user = this.userModel.list[ this.message.user_id ];  
+
+        /*let i = 0;
+        setInterval( ()=>{
+            i = (i + 10)%100;
+            this.message.progress = i + '%';
+            this.cd.markForCheck();
+            console.log( 'P', this.message.progress);
+        }, 300 ); */
     }
 
     emitFileTapped(){

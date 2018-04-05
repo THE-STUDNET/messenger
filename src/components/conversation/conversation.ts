@@ -160,8 +160,7 @@ export class ConversationComponent {
 
     printFile(){
         if( this.conversation.datum.message && this.conversation.datum.message.library ){
-            let file = this.conversation.datum.message.library; 
-            return file.name || this._getTypeName(file.type);
+            return this._getTypeName(this.conversation.datum.message.library.type);
         }
         return '';
     }

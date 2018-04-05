@@ -15,10 +15,8 @@ export class Upload {
 
         let xhr = new XMLHttpRequest(),
             formData = new FormData(),
-            upload = new Observable( observer => {
+            upload = new Observable<any>( observer => {
                 observers.push( observer );
-
-                console.log('SUBSCRIBE?', observers);
 
                 if( observers.length === 1 ){
                     xhr.send( formData );
@@ -33,8 +31,6 @@ export class Upload {
                     }
                 }
             });
-            
-        console.log('BUILD?');
             
         // Set formData file
         if( filename ){

@@ -86,11 +86,13 @@ export class PlayerComponent {
                 time = this.video.nativeElement.duration * ( x - rect.left ) /rect.width; 
 
             this.seek( time );
+            event.stopPropagation();
         }
     }
 
     seek( time ){
         this.video.nativeElement.currentTime = time;
+        this.showControls();
     }
 
     togglePlay(){

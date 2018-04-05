@@ -8,7 +8,7 @@
 
                 <div class="twolevels">
                     <div class="lvl1">{{ userModel.list[document.owner_id].datum | username:false:true }}</div>
-                    <div class="lvl2">{{ document.created_date | date: 'medium' }}</div>
+                    <div class="lvl2">{{ document.created_date | date: 'MMM d, y, h:mm a':undefined:'en-US' }}</div>
                 </div>
                 <!--<button class="icon-btn i-dots" (click)="showSettings($event)"></button>-->
             </div>

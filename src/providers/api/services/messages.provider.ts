@@ -97,8 +97,11 @@ export class MessagesPaginator extends AbstractPaginator {
     ready(){
         if( !this.messageReadyPromise ){
             let sendingPromise = this.storage.get( this.name+'.sendings' ).then( data => {
-                this.sendingMessages = data || [];
-                console.log('GET SENDINGS', data );
+                this.sendingMessages = [];
+                data = data || [];
+                data.forEach( datum => {
+                    this.send( datum.text, datum.library );
+                });
             });
             let failedPromise = this.storage.get( this.name + '.failed' ).then( data => {
                 this.failedMessages = data || {};
@@ -115,20 +118,54 @@ export class MessagesPaginator extends AbstractPaginator {
         });
     }
 
-    addSending( text?:string, library?:object, file? ){
-        let message = { text:text, library: library, id:undefined, user_id:this.account.session.id };
+    storeSendings(){
+        let sendings = [];
 
-        if( file ){    
-            message.library = {
-                name: file.name,
-                type: file.type,
-                file: file
+        this.sendingMessages.forEach( m => {
+            let message = {text: m.text, id:undefined, user_id:this.account.session.id, library:undefined };
+            if( m.library ){
+                message.library = { name: m.library.name, type: m.library.type, token: m.library.token };
+            }
+            sendings.push(message);
+        });
+
+        this.storage.set( this.name +'.sendings', sendings );
+    }
+
+    addSending( text?:string, library?:any, file? ){
+        let deferred = _getDeferred(),
+            message = { text:text, library: library, id:undefined, user_id:this.account.session.id, upload:undefined },
+            resolve = () => {
+                this.sendingMessages.push(message);
+                this.storeSendings();
+                // Process event.
+                this.events.process( this.name +'.sending' );
+                deferred.resolve( message );
             };
+
+        if( file ){
+            message.library = { name: file.name, type: file.type, file: file };
+            message.upload = this.upload.send( file, file.name );
+
+            this.fileCache.createFile( message.library.name, message.library.file ).then( ()=>{
+                resolve();
+            }, e => { 
+                console.log('FILE_NOT_CREATED', e); 
+                resolve();
+            });
+        }else if( library && !library.token && !file ){
+            this.fileCache.getFile( library.name ).then( entry => {
+                entry.file( file => {
+                    message.library.file = file;
+                    message.upload = this.upload.send( file, message.library.name );
+                    resolve();
+                }, e => console.log('ERR GET FILE REF FROM ENTRY', e));
+            }, e => console.log('ERR GET SENDING FILE', e));
+        }else{
+            resolve();
         }
 
-        this.sendingMessages.push(message);
-        this.storage.set( this.name +'.sendings', this.sendingMessages );
-        return message;
+        return deferred.promise;
     }
 
     removeSending( message ){
@@ -140,13 +177,17 @@ export class MessagesPaginator extends AbstractPaginator {
 
     _removeSending( idx ){
         this.sendingMessages.splice(idx, 1);
-        this.storage.set( this.name + '.sendings', this.sendingMessages );
+        this.storeSendings();
     }
 
     addFailed( message: any ){
         if( !this.failedMessages[message.prev_id] ){
             this.failedMessages[message.prev_id] = {};
         }
+        // Remove unused properties
+        delete( message.upload );
+        delete( message.progress );
+        // Add uid & failed tag.
         message.uid = message.prev_id + '.'+ Date.now();
         message.failed = true;
         this.failedMessages[message.prev_id][message.uid] = message;
@@ -173,9 +214,12 @@ export class MessagesPaginator extends AbstractPaginator {
 
     send( text?:string, library?:object, file? ){
         // Register message.
-        let message = this.addSending( text, library, file );
+        let messagePromise = this.addSending( text, library, file );
         // Send message.
-        this._send(message);        
+        messagePromise.then( message => {
+            this._send(message);
+        });                
+        return messagePromise;
     }
 
     _sendToAPI( message ){
@@ -192,56 +236,26 @@ export class MessagesPaginator extends AbstractPaginator {
             });
     }
 
-    _sendFile( message, file, name ){
-        let upload = this.upload.send( file, name );
-
-        upload.observable.subscribe( data => {
-            message.progress = data.progress;
-            if( data.token ){
-                message.progress = 100;
-                message.library.token = data.token;
-                // DELETING TEMP FILE
-                message.file = undefined;
-                //this.fileCache.removeFile( message.library.name );
-                // UPDATE SENDINGS IN CACHE
-                this.storage.set( this.name +'.sendings', this.sendingMessages );
-                // SEND MESSAGE TO API.
-                this._sendToAPI( message );
-            }
-        }, event => {
-            console.log('UPLOAD ERR', event);
-        });
-    }
-
     _send( message ){
-        if( message.library ){
-            if( message.library.file && message.library.file instanceof File ){
-                //this.fileCache.createFile( message.library.name, message.library.file ).then( ()=>{
-                    this._sendFile( message, message.library.file, message.library.name );
-                //});
-            }else{
-                this.fileCache.getFile( message.library.name ).then( entry => {
-                    entry.file( file => {
-                        this._sendFile( message, file, message.library.name );
-                    }, e => console.log('ERR GET FILE REF FROM ENTRY', e));
-                }, e => console.log('ERR GET SENDING FILE', e));
-            }
+        if( message.upload ){
+            message.upload.observable.subscribe( data => {
+                if( data.token ){
+                    message.library.token = data.token;
+                    // DELETING TEMP FILE
+                    message.file = undefined;
+                    this.fileCache.removeFile( message.library.name );
+                    // UPDATE SENDINGS IN CACHE
+                    this.storeSendings();
+                    // SEND MESSAGE TO API.
+                    this._sendToAPI( message );
+                }
+            }, event => {
+                console.log('UPLOAD ERR', event);
+                this._messageFailed( message );
+            });
         }else{
             this._sendToAPI( message );
         }
-
-        /*
-        return this.api.send('message.send', {text:message.text, conversation_id:this.conversation_id, library:message.library})
-            .then( data => {
-                message.id = parseInt(data.message_id);
-                return this.refresh();
-            }, err => {
-                if( this.network.type !== 'none' ){
-                    return this._send( message );
-                }else{
-                    return this._messageFailed( message );
-                }
-            });*/
     }
 
     _messageFailed( message ){

@@ -65,14 +65,14 @@ page-conversation{
         }
 
         .dta{        
-            margin-left: 3rem;
+            margin-left: 7rem;
             .dta-copy, textarea{
                 padding:.7rem 5rem .7rem 2rem;
                 font-size: 1.3rem;
             }
         }
 
-        .i-attach{
+        .i-attach, .i-camera{
             display: block;
             height: 4rem;
             position: absolute;
@@ -85,6 +85,10 @@ page-conversation{
                 position: relative;
                 top:.3rem;
             }
+        }
+
+        .i-camera{
+            left: 4.5rem;
         }
     }
 

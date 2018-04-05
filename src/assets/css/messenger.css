@@ -95,3 +95,6 @@
 .i-document:before {
   content: "\73";
 }
+.i-camera:before {
+  content: "\74";
+}

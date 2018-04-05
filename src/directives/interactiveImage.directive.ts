@@ -68,13 +68,15 @@ export class InteractiveImageDirective {
 
     reset(){
         setTimeout(()=>{
-            let r = this.el.nativeElement.getBoundingClientRect();
-            if( r.width === this.content.height && r.height === this.content.width ){
-                this.setValues();
-                this.setPosition( 0, 0 );
-                this.setStyle();
-            }else{
-                this.reset();
+            if( this.content && this.content.height ){
+                let r = this.el.nativeElement.getBoundingClientRect();
+                if( r.width === this.content.height && r.height === this.content.width ){
+                    this.setValues();
+                    this.setPosition( 0, 0 );
+                    this.setStyle();
+                }else{
+                    this.reset();
+                }
             }
         },50);
     }
@@ -219,22 +221,23 @@ export class InteractiveImageDirective {
     }
 
     ontouch( event ){
-        console.log('T', event);
-        // Build touch.
-        let touch = [ this._getTouchPositions(event.touches[0]) ];
-        // If multi touch, set multitouch data (initial ratio & distance between touches) & register the second touch.
-        if( event.touches.length > 1 ){
-            touch.push( this._getTouchPositions(event.touches[1] ) );
-            this.multiTouch = {
-                touch: touch,
-                distance: this._getDistance(touch),
-                ratio: this.ratio,
-                originalX: this.x,
-                originalY: this.y
-            };
+        if( this.loaded ){
+            // Build touch.
+            let touch = [ this._getTouchPositions(event.touches[0]) ];
+            // If multi touch, set multitouch data (initial ratio & distance between touches) & register the second touch.
+            if( event.touches.length > 1 ){
+                touch.push( this._getTouchPositions(event.touches[1] ) );
+                this.multiTouch = {
+                    touch: touch,
+                    distance: this._getDistance(touch),
+                    ratio: this.ratio,
+                    originalX: this.x,
+                    originalY: this.y
+                };
+            }
+            // Set last touch
+            this.lastTouch = touch;
         }
-        // Set last touch
-        this.lastTouch = touch;
     }
     // Return center position.
     _getCenter( touches ){
@@ -256,44 +259,46 @@ export class InteractiveImageDirective {
     }
 
     onmove( event ){
-        var touch = [ this._getTouchPositions(event.touches[0]) ];
-        // If there is more than one touch.
-        if( event.touches.length > 1 ){
-            touch.push( this._getTouchPositions(event.touches[1]) );
-            // If user was already multi touching...
-            if( this.multiTouch ){
-                this.setZoom( touch );
+        if( this.loaded ){
+            var touch = [ this._getTouchPositions(event.touches[0]) ];
+            // If there is more than one touch.
+            if( event.touches.length > 1 ){
+                touch.push( this._getTouchPositions(event.touches[1]) );
+                // If user was already multi touching...
+                if( this.multiTouch ){
+                    this.setZoom( touch );
 
-            // Else -> init multi touch data.
+                // Else -> init multi touch data.
+                }
+                this.multiTouch = {
+                    touch: touch,
+                    distance: this._getDistance(touch),
+                    ratio: this.ratio,
+                    originalX: this.x,
+                    originalY: this.y
+                };
+            }else{
+                // Remove multitouch data if any...
+                this.multiTouch = undefined;
             }
-            this.multiTouch = {
-                touch: touch,
-                distance: this._getDistance(touch),
-                ratio: this.ratio,
-                originalX: this.x,
-                originalY: this.y
-            };
-        }else{
-            // Remove multitouch data if any...
-            this.multiTouch = undefined;
-        }
 
-        // If there is another touch -> calculate background position.
-        if( this.lastTouch ){
-            let deltaX, deltaY;
+            // If there is another touch -> calculate background position.
+            if( this.lastTouch ){
+                let deltaX, deltaY;
 
-            deltaX = touch[0].x - this.lastTouch[0].x;
-            deltaY = touch[0].y - this.lastTouch[0].y;
-            // If multi touch ( respect second touch movement )
-            if( this.lastTouch.length > 1 && touch.length > 1 ){
-                deltaX = deltaX/2 + (touch[1].x - this.lastTouch[1].x)/2;
-                deltaY = deltaY/2 + (touch[1].y - this.lastTouch[1].y)/2;
+                deltaX = touch[0].x - this.lastTouch[0].x;
+                deltaY = touch[0].y - this.lastTouch[0].y;
+                // If multi touch ( respect second touch movement )
+                if( this.lastTouch.length > 1 && touch.length > 1 ){
+                    deltaX = deltaX/2 + (touch[1].x - this.lastTouch[1].x)/2;
+                    deltaY = deltaY/2 + (touch[1].y - this.lastTouch[1].y)/2;
+                }
+                this.setPosition( this.x + deltaX, this.y + deltaY );
             }
-            this.setPosition( this.x + deltaX, this.y + deltaY );
-        }
 
-        this.lastTouch = touch;
-        this.setStyle();
+            this.lastTouch = touch;
+            this.setStyle();
+        }
     }
 
     setStyle(){

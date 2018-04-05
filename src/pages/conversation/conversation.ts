@@ -62,11 +62,12 @@ export class ConversationPage {
 
 
     sendFile( $event ){
+        console.log('ON FILE SELECT', $event );
         if( $event.target.files.length ){
             let file = $event.target.files[0];
             this.loadBehaviour = 'godown';
 
-            console.log('FILE CHANGED', $event, file );
+            console.log('FILE', file);
 
             if( this.messagesPaginator ){
                 this.messagesPaginator.send( undefined, undefined, file );
@@ -93,6 +94,7 @@ export class ConversationPage {
                 }
             }
         }
+        $event.target.value = null;
     }
     
     private _listenCommonEvents(){
@@ -105,6 +107,8 @@ export class ConversationPage {
     private _listenConversationEvents(){
         // Listen to paginator self updates ( When a message is sent the paginator refresh its own list ).
         this.eventListeners.push( this.events.on('cvn'+this.conversation.id+'.updated',this._onRefresh.bind(this)) );
+        // Listen to paginator new sending message
+        this.eventListeners.push( this.events.on('cvn'+this.conversation.id+'.sending', ()=>{ this.cd.markForCheck(); }));
         // Listen to notification
         this.eventListeners.push( this.events.on('notification::message', ( event )=>{
             let wasTapped = event.data[0],

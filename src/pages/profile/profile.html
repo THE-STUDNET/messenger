@@ -37,10 +37,10 @@
                 <div class="inf">My Events ({{ eventsCount }})</div>
                 <div class="i i-chevron-right"></div>
             </div>
-            <div class="page-info" (tap)="logout()">
-                <div class="inf">Logout</div>
-            </div>
 
+            <div id="logout">
+                <button ion-button (tap)="logout()" full>Logout</button>
+            </div>
         </div>
 
     </ion-content>

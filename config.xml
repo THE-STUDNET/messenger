@@ -49,6 +49,10 @@
         <resource-file src="resources/fcm/drawable-xhdpi/icon.png" target="res/drawable-xhdpi/icon.png" />
         <resource-file src="resources/fcm/drawable-xxhdpi/icon.png" target="res/drawable-xxhdpi/icon.png" />
         <resource-file src="resources/fcm/drawable-xxxhdpi/icon.png" target="res/drawable-xxxhdpi/icon.png" />
+        <uses-permission android:name="android.permission.RECORD_AUDIO" />
+        <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+        <uses-permission android:name="android.permission.RECORD_VIDEO" />
+        <uses-permission android:name="android.permission.CAMERA" />
     </platform>
     <platform name="ios">
         <allow-intent href="itms:*" />
@@ -105,5 +109,5 @@
     <plugin name="cordova-plugin-file-opener2" spec="^2.0.19" />
     <plugin name="cordova-plugin-file-transfer" spec="^1.7.1" />
     <engine name="browser" spec="5.0.3" />
-    <engine name="android" spec="6.4.0" />
+    <engine name="android" spec="~6.4.0" />
 </widget>

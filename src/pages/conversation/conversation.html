@@ -4,7 +4,8 @@
             <button class="icon-btn i i-arrow-left"
                 (tap)="back()"></button>
             <div class="title">{{ printName() }}</div>
-            <button class="icon-btn i-dots" (click)="showSettings($event)"></button>
+            <button class="icon-btn i-dots" *ngIf="conversation && conversation.id" 
+                (click)="showSettings($event)"></button>
         </div>
         <div class="bottom">
             <div class="subtitle">{{ printSubtitle() }}</div>
@@ -53,8 +54,11 @@
     <div class="sender">
 
         <label class="icon-btn i-attach" for="sharefile"></label>
-        <input accept="image/*,video/*" capture type="file" hidden id="sharefile" (change)="sendFile($event)">
+        <input type="file" hidden id="sharefile" (change)="sendFile($event)">
         
+        <label class="icon-btn i-camera" for="sharephoto"></label>
+        <input accept="image/*" capture="camera" type="file" hidden id="sharephoto" (change)="sendFile($event)">
+
         <div class="dta">
             <textarea #senderArea placeholder="Say something..." type="text" (input)="onTyping(senderArea)"
                 [(ngModel)]="text" (keydown.enter)="send(senderArea, $event )" name="text"></textarea>

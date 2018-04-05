@@ -23,7 +23,7 @@ page-viewer{
         line-height: 4.2rem;
         color: #FFF;
         display: flex;
-        background: rgba(50,50,50,.2);
+        background: rgba(0,0,0,.2);
         opacity: 1;
         transition: opacity .3s;
 
@@ -31,6 +31,7 @@ page-viewer{
             flex-grow:1;
             line-height:2rem;
             font-size: 1.2rem;
+            margin-right: 4rem;
         }
         .lvl1{
             font-weight: 700;

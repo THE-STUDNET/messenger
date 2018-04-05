@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
+import { Platform } from 'ionic-angular';
 import { File } from '@ionic-native/file';
 import { _getDeferred } from '../../../functions/getDeferred';
-
-var deferred: any = _getDeferred();
 
 @Injectable()
 export class FileCache {
@@ -10,8 +9,7 @@ export class FileCache {
     public dir: string = this.file.cacheDirectory;
     public promises: any = {};
 
-    constructor( public file:File ) {}
-
+    constructor( public file:File, public platform: Platform ) {}
 
     tokenIsCached( token:string ){
         return this.file.checkFile( this.dir, token );
