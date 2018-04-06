@@ -50,6 +50,20 @@ page-conversation{
         padding: .4rem 2rem;
         background: #FFF;
 
+        &.writing{
+            .i-attach{
+                left:-8rem;
+            }
+            
+            .i-camera{
+                left:-4rem;
+            }
+
+            .dta{        
+                margin-left: 0rem;
+            }
+        }
+
         .send{
             position: absolute;
             width: 4rem;
@@ -66,6 +80,7 @@ page-conversation{
 
         .dta{        
             margin-left: 7rem;
+            transition: margin .3s;
             .dta-copy, textarea{
                 padding:.7rem 5rem .7rem 2rem;
                 font-size: 1.3rem;
@@ -81,6 +96,7 @@ page-conversation{
             line-height: 4rem;
             text-align: center;
             left: .5rem;
+            transition: left .3s;
             &::before{
                 position: relative;
                 top:.3rem;

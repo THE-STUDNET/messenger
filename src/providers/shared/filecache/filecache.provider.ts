@@ -39,7 +39,7 @@ export class FileCache {
     }
 
     removeFile( token, path? ){
-        return this.file.removeFile( path||this.dir, token );
+        return this.file.removeFile( path||this.dir, token ).catch(e=>console.log('CANNOT REMOVE FILE', e));
     }
 
     createFileFromUrl( url:string, token:string, path?:string ){
@@ -71,5 +71,26 @@ export class FileCache {
             return deferred.promise;
         }
         return this.promises[token];        
+    }
+
+    getBlobFromUrl( url ){
+        let xhr = new XMLHttpRequest(),
+            deferred = _getDeferred();
+
+        xhr.open('GET', url );
+        xhr.responseType = 'blob';
+        xhr.onload = () => {
+            let blob = xhr.response;
+            deferred.resolve( blob );
+        }
+
+        xhr.onerror = e=>{
+            console.log('ERROR GET', url, e);
+            deferred.reject();
+        };
+
+        xhr.send();
+
+        return deferred.promise;
     }
 }

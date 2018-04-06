@@ -2,12 +2,14 @@ import { Component, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef } from
 import { NavController, NavParams, Content, PopoverController } from 'ionic-angular';
 import { Keyboard } from '@ionic-native/keyboard';
 import { Network } from '@ionic-native/network';
+import { Camera, CameraOptions } from '@ionic-native/camera';
+
 import { Subscription } from 'rxjs/Subscription';
 
 import { PipesProvider } from '../../pipes/pipes.provider';
 import { MessagesPaginator } from '../../providers/api/services/messages.provider';
 import { Events } from '../../providers/events/events.module';
-import { WebSocket, SoundsManager } from '../../providers/shared/shared.module';
+import { WebSocket, SoundsManager, FileCache } from '../../providers/shared/shared.module';
 import { Account, ConversationModel, UserModel, MessagesPaginatorProvider,  
     PageModel, ConversationService, ConversationUnreadDateModel } from '../../providers/api/api.module';
 
@@ -55,44 +57,66 @@ export class ConversationPage {
     public loadingUsers: boolean = true;
     public loadingConversation: boolean = true;
     public hasToCreate: boolean = false;
+    public isWriting: boolean = false;
     // LISTENERS...
     private socketListeners: any = {};
     private eventListeners: any = [];
     private subscriptions: Subscription[] = [];
+    
+    _send( text?, fileOrBlob? ){
+        this.loadBehaviour = 'godown';
 
+        if( this.messagesPaginator ){
+            this.messagesPaginator.send( text, undefined, fileOrBlob );
+        }else{
+            this.queuedMessages.push({ 
+                user_id: this.account.session.id, 
+                text: text,
+                file: fileOrBlob,
+                created_date: (new Date()).toISOString()
+            });
+
+            if( !this.creating ){   
+                this.creating = this.cvnService.createConversation( this.users.concat([this.account.session.id]), 'Chat' ).then( conversation_id => {
+                    let id = parseInt(conversation_id);
+                    // Set messages paginator & get last messages...
+                    this.messagesPaginator = this.msgPaginatorProvider.getPaginator(id);
+                    // Get conversation & reload component. 
+                    this.getConversation( id ).then( () => {
+                        this.loadConversation( true ).then(()=>{
+                            this._sendQueue();
+                        });
+                    });
+                });
+            }
+        }
+    }
+
+    sendPicture(){
+        let options: CameraOptions = {
+            quality: 100,
+            destinationType: this.camera.DestinationType.FILE_URI,
+            encodingType: this.camera.EncodingType.PNG,
+            mediaType: this.camera.MediaType.ALLMEDIA
+        }
+
+        this.camera.getPicture(options).then((imageFileUri) => {
+            console.log('IMAGE', imageFileUri );
+            this.fileCache.getBlobFromUrl( imageFileUri ).then( blob => {
+                console.log('BLOB', blob, blob.type, blob.name );
+                this._send( undefined, blob );
+            });
+        }, (err) => {
+            console.log('ERR',err);
+            // Handle error
+        });
+    }
 
     sendFile( $event ){
         console.log('ON FILE SELECT', $event );
         if( $event.target.files.length ){
             let file = $event.target.files[0];
-            this.loadBehaviour = 'godown';
-
-            console.log('FILE', file);
-
-            if( this.messagesPaginator ){
-                this.messagesPaginator.send( undefined, undefined, file );
-            }else{
-                this.queuedMessages.push({ 
-                    user_id: this.account.session.id, 
-                    text: undefined,
-                    file: file,
-                    created_date: (new Date()).toISOString()
-                });
-
-                if( !this.creating ){   
-                    this.creating = this.cvnService.createConversation( this.users.concat([this.account.session.id]), 'Chat' ).then( conversation_id => {
-                        let id = parseInt(conversation_id);
-                        // Set messages paginator & get last messages...
-                        this.messagesPaginator = this.msgPaginatorProvider.getPaginator(id);
-                        // Get conversation & reload component. 
-                        this.getConversation( id ).then( () => {
-                            this.loadConversation( true ).then(()=>{
-                                this._sendQueue();
-                            });
-                        });
-                    });
-                }
-            }
+            this._send( undefined, file );
         }
         $event.target.value = null;
     }
@@ -317,7 +341,7 @@ export class ConversationPage {
     constructor( public cd: ChangeDetectorRef, private keyboard: Keyboard, public navCtrl: NavController, public params: NavParams, 
         public account: Account, private msgPaginatorProvider: MessagesPaginatorProvider, public cvnService: ConversationService, 
         public events: Events, public ws: WebSocket, public sounds: SoundsManager, public pipesProvider: PipesProvider,
-        public popOverController: PopoverController, public network: Network,
+        public popOverController: PopoverController, public network: Network, public camera: Camera, public fileCache: FileCache,
         public cvnModel: ConversationModel, public userModel: UserModel, public pageModel:PageModel, private cURD: ConversationUnreadDateModel ) {
 
         // Define self binded function for message components.
@@ -486,6 +510,9 @@ export class ConversationPage {
             this.text = this.text.slice(0,-1);
             this.send( textarea );
         }
+        // Set writingFlag
+        console.log('TEXT?!', this.text, !! this.text );
+        this.isWriting = !!this.text;
         // Resize content...
         this.content.resize();
         // Send writing events...
@@ -506,31 +533,8 @@ export class ConversationPage {
         if( this.text.trim() ){
             let text = this.text.trim();
             this.text = '';
-            this.loadBehaviour = 'godown';
-
-            if( this.messagesPaginator ){
-                this.messagesPaginator.send( text );
-            }else{
-                this.queuedMessages.push({ 
-                    user_id: this.account.session.id, 
-                    text:text,
-                    created_date: (new Date()).toISOString(),
-                    promise: true
-                });
-                if( !this.creating ){   
-                    this.creating = this.cvnService.createConversation( this.users.concat([this.account.session.id]), 'Chat' ).then( conversation_id => {
-                        let id = parseInt(conversation_id);
-                        // Set messages paginator & get last messages...
-                        this.messagesPaginator = this.msgPaginatorProvider.getPaginator(id);
-                        // Get conversation & reload component. 
-                        this.getConversation( id ).then( () => {
-                            this.loadConversation( true ).then(()=>{
-                                this._sendQueue();
-                            });
-                        });
-                    });
-                }
-            }
+            this.isWriting = false;
+            this._send( text );
         }
     }
 

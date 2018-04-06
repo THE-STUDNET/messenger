@@ -51,16 +51,15 @@
 
 <ion-footer>
 
-    <div class="sender">
+    <div class="sender" [class.writing]="isWriting">
 
         <label class="icon-btn i-attach" for="sharefile"></label>
         <input type="file" hidden id="sharefile" (change)="sendFile($event)">
         
-        <label class="icon-btn i-camera" for="sharephoto"></label>
-        <input accept="image/*" capture="camera" type="file" hidden id="sharephoto" (change)="sendFile($event)">
+        <div class="icon-btn i-camera" (tap)="sendPicture()"></div>
 
         <div class="dta">
-            <textarea #senderArea placeholder="Say something..." type="text" (input)="onTyping(senderArea)"
+            <textarea #senderArea placeholder="Say something..." type="text" (input)="onTyping(senderArea);"
                 [(ngModel)]="text" (keydown.enter)="send(senderArea, $event )" name="text"></textarea>
             <div class="dta-copy">{{ text }}</div>
         </div>
